@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
 import { darkGreenTheme } from './src/theme';
-import { OnboardingScreen } from './src/screens/OnboardingScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { MyFarmsScreen } from './src/screens/MyFarmsScreen';
 import { FarmDetailScreen } from './src/screens/FarmDetailScreen';

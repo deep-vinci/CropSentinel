@@ -1,61 +1,62 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export const OnboardingScreen = ({ navigation }) => {
+export default function OnboardingScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <View style={styles.branding}>
+      <View style={styles.content}>
         <Text style={styles.title}>CropSentinel</Text>
         <Text style={styles.tagline}>AI-powered farm intelligence</Text>
       </View>
 
-      <View style={styles.actionArea}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.replace('Login')}>
-          <Text style={styles.buttonText}>Get Started</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Login')}
+      >
+        <Text style={styles.buttonText}>Get Started</Text>
+      </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a3c2e',
     paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingVertical: 40,
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  branding: {
+  content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 80,
+    width: '100%',
   },
   title: {
-    fontSize: 44,
-    fontWeight: '800',
+    fontSize: 36,
+    fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
-    letterSpacing: 0.5,
-    marginBottom: 16,
   },
   tagline: {
-    fontSize: 18,
-    color: '#A2D59F',
+    fontSize: 16,
+    color: '#90EE90',
     textAlign: 'center',
-    lineHeight: 26,
-  },
-  actionArea: {
-    paddingBottom: 24,
+    marginTop: 10,
   },
   button: {
     backgroundColor: '#2e7d32',
-    borderRadius: 14,
-    paddingVertical: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 8,
+    width: '100%',
     alignItems: 'center',
   },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
+  },
+});
