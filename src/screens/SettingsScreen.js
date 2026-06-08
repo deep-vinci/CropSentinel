@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { materialTheme } from '../theme';
+import { avatars, illustrations } from '../assets';
 
 export const SettingsScreen = ({ navigation }) => {
   const [unitsMetric, setUnitsMetric] = useState(true);
@@ -9,7 +11,7 @@ export const SettingsScreen = ({ navigation }) => {
   const [darkMode, setDarkMode] = useState(false);
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={["top","bottom"]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>←</Text>
@@ -19,8 +21,9 @@ export const SettingsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Image source={illustrations.profileLeaves} style={styles.profileLeaves} />
         <View style={styles.profileCard}>
-          <View style={styles.avatarPlaceholder} />
+          <Image source={avatars.farmer} style={styles.avatarPlaceholder} />
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>Yesh</Text>
             <Text style={styles.profileEmail}>yesh@example.com</Text>

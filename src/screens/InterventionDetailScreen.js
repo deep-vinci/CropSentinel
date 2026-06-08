@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { materialTheme } from '../theme';
 
 const interventionDetails = {
@@ -16,7 +17,7 @@ export const InterventionDetailScreen = ({ navigation }) => {
   const confidencePercent = Math.round(interventionDetails.confidence * 100);
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={["top","bottom"]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>← Back</Text>
@@ -80,7 +81,7 @@ export const InterventionDetailScreen = ({ navigation }) => {
           <Text style={styles.primaryButtonText}>Apply Intervention</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

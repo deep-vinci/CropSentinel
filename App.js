@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { materialTheme } from './src/theme';
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -16,9 +17,10 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <>
-      <StatusBar style="dark" backgroundColor={materialTheme.colors.background} />
-      <NavigationContainer
+    <SafeAreaProvider>
+      <>
+        <StatusBar style="dark" backgroundColor={materialTheme.colors.background} />
+        <NavigationContainer
         theme={{
           dark: false,
           colors: {
@@ -51,7 +53,8 @@ export default function App() {
           <Stack.Screen name="InterventionDetail" component={InterventionDetailScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
-      </NavigationContainer>
-    </>
+        </NavigationContainer>
+      </>
+    </SafeAreaProvider>
   );
 }

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { materialTheme } from '../theme';
+import { illustrations } from '../assets';
 
 export const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={["top"]}>
       <View style={styles.headerArea}>
-        <View style={styles.decorativeLeaf} />
+        <Image source={illustrations.leavesTopRight} style={styles.decorativeLeaf} />
         <Text style={styles.welcome}>Welcome back</Text>
         <Text style={styles.subtitle}>Log in to view your farm insights and alerts.</Text>
       </View>
@@ -70,7 +72,7 @@ export const LoginScreen = ({ navigation }) => {
           <Text style={[styles.linkText, styles.linkAction]}>Create Account</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
+import { crops } from '../assets';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const MOCK_FARMS = [
   {
@@ -50,6 +52,7 @@ export const MyFarmsScreen = ({ navigation }) => {
         style={styles.card}
         onPress={() => navigation.navigate('FarmDetail', { farm: item })}
       >
+        <Image source={crops[item.cropType.toLowerCase()] || crops.default} style={styles.cropImage} />
         <View style={styles.cardHeader}>
           <Text style={styles.farmName}>{item.name}</Text>
           <View style={[styles.healthBadge, { borderColor: materialTheme.colors.outline }]}> 
@@ -84,7 +87,7 @@ export const MyFarmsScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={["top","bottom"]}>
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Good Morning, Farmer 🌿</Text>
@@ -138,10 +141,10 @@ export const MyFarmsScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.fab} onPress={() => { /* add field */ }}>
+      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('AddField') }>
         <Feather name="plus" size={20} color="#FFFFFF" />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -310,6 +313,14 @@ const styles = StyleSheet.create({
     padding: materialTheme.spacing.sm,
     backgroundColor: materialTheme.colors.surfaceVariant,
     borderRadius: materialTheme.borderRadius.md,
+  },
+  cropImage: {
+    width: '100%',
+    height: 140,
+    borderTopLeftRadius: materialTheme.borderRadius.lg,
+    borderTopRightRadius: materialTheme.borderRadius.lg,
+    marginBottom: materialTheme.spacing.md,
+    backgroundColor: materialTheme.colors.surfaceVariant,
   },
   trendText: {
     color: materialTheme.colors.onSurface,

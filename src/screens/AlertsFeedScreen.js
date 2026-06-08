@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
@@ -70,7 +71,7 @@ export const AlertsFeedScreen = ({ navigation }) => {
   );
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={["top","bottom"]}>
       <View style={styles.header}>
         <Text style={styles.heading}>Alerts</Text>
         <View style={styles.badge}>
@@ -86,7 +87,7 @@ export const AlertsFeedScreen = ({ navigation }) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={materialTheme.colors.primary} />}
         showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

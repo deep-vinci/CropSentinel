@@ -1,23 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { materialTheme } from '../theme';
+import { illustrations } from '../assets';
 
 export default function OnboardingScreen({ navigation }) {
   return (
-    <View style={styles.screen}>
-        <View style={styles.heroCard}>
-          <View style={styles.topIcon}>
-            <MaterialCommunityIcons name="sprout" size={48} color={materialTheme.colors.primaryDark} />
-          </View>
-
-          <Text style={styles.logo}>CropSentinel</Text>
-          <Text style={styles.subtitle}>Intelligent farm insights for healthier fields.</Text>
-
-          <View style={styles.landscapeIllustration} />
+    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+      <View style={styles.heroCard}>
+        <View style={styles.topIcon}>
+          <MaterialCommunityIcons name="sprout" size={48} color={materialTheme.colors.primaryDark} />
         </View>
 
-      <View style={styles.actions}> 
+        <Text style={styles.logo}>CropSentinel</Text>
+        <Text style={styles.subtitle}>Intelligent farm insights for healthier fields.</Text>
+
+        <Image source={illustrations.onboarding} style={styles.landscapeIllustration} resizeMode="cover" />
+      </View>
+
+      <View style={styles.actions}>
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => navigation.navigate('Login')}
@@ -32,7 +34,7 @@ export default function OnboardingScreen({ navigation }) {
           <Text style={styles.outlineButtonText}>Login</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
