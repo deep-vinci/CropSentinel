@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Faraway",
+    "slug": "faraway",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "scheme": "faraway",
+    "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ]
+    ]
+  }
+}
