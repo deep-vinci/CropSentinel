@@ -11,10 +11,12 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "@react-navigation/native": "^6.1.0",
     "@react-navigation/native-stack": "^6.10.0",
     "babel-preset-expo": "^56.0.14",
     "expo": "^56.0.9",
+    "expo-font": "~56.0.5",
     "expo-screen-orientation": "^56.0.5",
     "expo-status-bar": "~56.0.4",
     "react": "19.2.3",
