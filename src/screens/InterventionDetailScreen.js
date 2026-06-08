@@ -121,10 +121,10 @@ const styles = StyleSheet.create({
     marginBottom: materialTheme.spacing.md,
   },
   recommendationChip: {
-    backgroundColor: materialTheme.colors.tertiary,
+    backgroundColor: materialTheme.colors.error + '22',
     paddingHorizontal: materialTheme.spacing.sm,
     paddingVertical: 8,
-    borderRadius: materialTheme.borderRadius.md,
+    borderRadius: materialTheme.borderRadius.chip,
   },
   recommendationText: {
     color: materialTheme.colors.onSurface,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: materialTheme.spacing.sm,
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.lg,
+    borderRadius: materialTheme.borderRadius.card,
     padding: materialTheme.spacing.sm,
     shadowColor: materialTheme.colors.shadow,
     shadowOpacity: 0.12,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.lg,
+    borderRadius: materialTheme.borderRadius.card,
     padding: materialTheme.spacing.md,
     marginBottom: materialTheme.spacing.lg,
     shadowColor: materialTheme.colors.shadow,

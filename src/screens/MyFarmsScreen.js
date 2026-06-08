@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 const MOCK_FARMS = [
@@ -85,18 +87,26 @@ export const MyFarmsScreen = ({ navigation }) => {
     <View style={styles.screen}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Good Morning, Farmer</Text>
+          <Text style={styles.greeting}>Good Morning, Farmer 🌿</Text>
           <Text style={styles.balance}>Your farms are healthy and ready for review.</Text>
         </View>
-        <View style={styles.headerAction}>
-          <Text style={styles.headerActionText}>Insights</Text>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Feather name="bell" size={20} color={materialTheme.colors.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Feather name="activity" size={20} color={materialTheme.colors.textSecondary} />
+          </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.weatherRow}>
         {WEATHER.map((item) => (
           <View key={item.label} style={styles.weatherCard}>
-            <Text style={styles.weatherValue}>{item.value}</Text>
+            <View style={styles.weatherIconRow}>
+              <Feather name={item.icon || 'sun'} size={16} color={materialTheme.colors.primaryDark} />
+              <Text style={styles.weatherValue}>{item.value}</Text>
+            </View>
             <Text style={styles.weatherLabel}>{item.label}</Text>
           </View>
         ))}
@@ -111,12 +121,26 @@ export const MyFarmsScreen = ({ navigation }) => {
       />
 
       <View style={styles.bottomNav}>
-        {navItems.map((item) => (
-          <TouchableOpacity key={item} style={styles.bottomNavItem}>
-            <Text style={styles.bottomNavText}>{item}</Text>
-          </TouchableOpacity>
-        ))}
+        <TouchableOpacity style={styles.bottomNavItemActive}>
+          <Feather name="home" size={18} color={materialTheme.colors.primary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomNavItem}>
+          <MaterialCommunityIcons name="sprout" size={18} color={materialTheme.colors.textSecondary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomNavItem}>
+          <Feather name="activity" size={18} color={materialTheme.colors.textSecondary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomNavItem}>
+          <Feather name="bell" size={18} color={materialTheme.colors.textSecondary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomNavItem}>
+          <Feather name="user" size={18} color={materialTheme.colors.textSecondary} />
+        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity style={styles.fab} onPress={() => { /* add field */ }}>
+        <Feather name="plus" size={20} color="#FFFFFF" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -132,7 +156,7 @@ const styles = StyleSheet.create({
     marginBottom: materialTheme.spacing.md,
     padding: materialTheme.spacing.md,
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.lg,
+    borderRadius: materialTheme.borderRadius.card,
     shadowColor: materialTheme.colors.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 12,
@@ -158,7 +182,7 @@ const styles = StyleSheet.create({
     backgroundColor: materialTheme.colors.primaryContainer,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: materialTheme.borderRadius.md,
+    borderRadius: materialTheme.borderRadius.button,
   },
   headerActionText: {
     color: materialTheme.colors.primary,
@@ -173,11 +197,16 @@ const styles = StyleSheet.create({
   weatherCard: {
     flex: 1,
     backgroundColor: materialTheme.colors.surface,
-    padding: materialTheme.spacing.sm,
+    padding: materialTheme.spacing.md,
     marginHorizontal: 4,
-    borderRadius: materialTheme.borderRadius.md,
+    borderRadius: materialTheme.borderRadius.card,
     borderWidth: 1,
     borderColor: materialTheme.colors.outline,
+  },
+  weatherIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   weatherValue: {
     color: materialTheme.colors.onSurface,
@@ -293,22 +322,40 @@ const styles = StyleSheet.create({
     right: materialTheme.spacing.lg,
     bottom: materialTheme.spacing.sm,
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.xl,
+    borderRadius: materialTheme.borderRadius.card,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     paddingVertical: materialTheme.spacing.sm,
     paddingHorizontal: materialTheme.spacing.md,
-    shadowColor: materialTheme.colors.shadow,
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: materialTheme.colors.outline,
   },
   bottomNavItem: {
     alignItems: 'center',
+    padding: 8,
+  },
+  bottomNavItemActive: {
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: materialTheme.colors.primaryContainer,
+    borderRadius: 12,
   },
   bottomNavText: {
     color: materialTheme.colors.onSurface,
     fontSize: 12,
   },
+  fab: {
+    position: 'absolute',
+    right: materialTheme.spacing.lg,
+    bottom: materialTheme.spacing.lg * 2,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: materialTheme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+  },
+  headerIcons: { flexDirection: 'row', alignItems: 'center' },
+  iconBtn: { marginLeft: 12 },
 });

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 const MOCK_ALERTS = [
@@ -53,7 +54,10 @@ export const AlertsFeedScreen = ({ navigation }) => {
       style={[styles.alertCard, { borderLeftColor: severityColors[item.severity] }]}
       onPress={() => navigation.navigate('InterventionDetail', { alertId: item.id })}
     >
-      <Text style={styles.farmName}>{item.farmName}</Text>
+      <View style={styles.alertHeaderRow}>
+        <Feather name="bell" size={18} color={severityColors[item.severity]} />
+        <Text style={styles.farmName}>{item.farmName}</Text>
+      </View>
       <Text style={styles.alertTitle}>{item.title}</Text>
       <Text style={styles.description}>{item.description}</Text>
       <View style={styles.cardFooter}>
@@ -108,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: materialTheme.colors.primaryContainer,
     paddingHorizontal: materialTheme.spacing.sm,
     paddingVertical: 8,
-    borderRadius: materialTheme.borderRadius.md,
+    borderRadius: materialTheme.borderRadius.button,
   },
   badgeText: {
     color: materialTheme.colors.primary,
@@ -121,7 +125,7 @@ const styles = StyleSheet.create({
   },
   alertCard: {
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.lg,
+    borderRadius: materialTheme.borderRadius.card,
     padding: materialTheme.spacing.lg,
     marginBottom: materialTheme.spacing.md,
     borderLeftWidth: 5,
@@ -155,10 +159,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   severityPill: {
-    borderRadius: materialTheme.borderRadius.md,
+    borderRadius: materialTheme.borderRadius.chip,
     paddingHorizontal: materialTheme.spacing.sm,
     paddingVertical: 6,
   },
+  alertHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   severityText: {
     fontSize: 12,
     fontWeight: '700',

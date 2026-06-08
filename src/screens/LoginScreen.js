@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 export const LoginScreen = ({ navigation }) => {
@@ -9,34 +10,41 @@ export const LoginScreen = ({ navigation }) => {
   return (
     <View style={styles.screen}>
       <View style={styles.headerArea}>
-        <Text style={styles.welcome}>Welcome back 🌿</Text>
+        <View style={styles.decorativeLeaf} />
+        <Text style={styles.welcome}>Welcome back</Text>
         <Text style={styles.subtitle}>Log in to view your farm insights and alerts.</Text>
       </View>
 
       <View style={styles.formCard}>
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="farmer@example.com"
-            placeholderTextColor={materialTheme.colors.onSurface + '99'}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.inputRow}>
+            <Feather name="mail" size={20} color={materialTheme.colors.textSecondary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="farmer@example.com"
+              placeholderTextColor={materialTheme.colors.textSecondary}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="********"
-            placeholderTextColor={materialTheme.colors.onSurface + '99'}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View style={styles.inputRow}>
+            <Feather name="lock" size={20} color={materialTheme.colors.textSecondary} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="********"
+              placeholderTextColor={materialTheme.colors.textSecondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
         </View>
 
         <TouchableOpacity
@@ -90,7 +98,7 @@ const styles = StyleSheet.create({
   },
   formCard: {
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.lg,
+    borderRadius: materialTheme.borderRadius.card,
     padding: materialTheme.spacing.lg,
     shadowColor: materialTheme.colors.shadow,
     shadowOpacity: 0.18,
@@ -108,18 +116,26 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: materialTheme.colors.background,
+    backgroundColor: materialTheme.colors.surfaceVariant,
     borderColor: materialTheme.colors.outline,
     borderWidth: 1,
-    borderRadius: materialTheme.borderRadius.md,
-    paddingHorizontal: 16,
+    borderRadius: materialTheme.borderRadius.input,
+    paddingHorizontal: 48,
     paddingVertical: 14,
     color: materialTheme.colors.onSurface,
     fontSize: 16,
   },
+  inputRow: {
+    position: 'relative',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: 12,
+    top: 12,
+  },
   primaryButton: {
     backgroundColor: materialTheme.colors.primary,
-    borderRadius: materialTheme.borderRadius.md,
+    borderRadius: materialTheme.borderRadius.button,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: materialTheme.spacing.sm,

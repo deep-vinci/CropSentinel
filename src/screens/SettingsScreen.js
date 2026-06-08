@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Image } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 export const SettingsScreen = ({ navigation }) => {
@@ -18,6 +19,14 @@ export const SettingsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.profileCard}>
+          <View style={styles.avatarPlaceholder} />
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>Yesh</Text>
+            <Text style={styles.profileEmail}>yesh@example.com</Text>
+          </View>
+          <Feather name="edit-2" size={18} color={materialTheme.colors.surface} />
+        </View>
         <Text style={styles.sectionTitle}>Preferences</Text>
         <View style={styles.card}>
           <View style={styles.row}>
@@ -111,6 +120,24 @@ const styles = StyleSheet.create({
     padding: materialTheme.spacing.lg,
     paddingBottom: materialTheme.spacing.xl,
   },
+  profileCard: {
+    backgroundColor: materialTheme.colors.primary,
+    borderRadius: materialTheme.borderRadius.card,
+    padding: materialTheme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: materialTheme.spacing.lg,
+  },
+  avatarPlaceholder: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: materialTheme.colors.surface,
+    marginRight: materialTheme.spacing.md,
+  },
+  profileInfo: { flex: 1 },
+  profileName: { color: materialTheme.colors.surface, fontSize: 18, fontWeight: '700' },
+  profileEmail: { color: materialTheme.colors.surface, opacity: 0.9, marginTop: 4 },
   sectionTitle: {
     color: materialTheme.colors.onSurface,
     fontSize: 16,

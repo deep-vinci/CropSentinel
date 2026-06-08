@@ -1,23 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 export default function OnboardingScreen({ navigation }) {
   return (
     <View style={styles.screen}>
-      <View style={styles.heroCard}>
-        <View style={styles.illustration}>
-          <View style={styles.hill} />
-          <View style={styles.sun} />
-          <View style={styles.plantRow}>
-            <View style={styles.plantStem} />
-            <View style={styles.plantLeaf} />
+        <View style={styles.heroCard}>
+          <View style={styles.topIcon}>
+            <MaterialCommunityIcons name="sprout" size={48} color={materialTheme.colors.primaryDark} />
           </View>
-        </View>
 
-        <Text style={styles.logo}>CropSentinel</Text>
-        <Text style={styles.subtitle}>Intelligent farm insights with clean Material 3 styling.</Text>
-      </View>
+          <Text style={styles.logo}>CropSentinel</Text>
+          <Text style={styles.subtitle}>Intelligent farm insights for healthier fields.</Text>
+
+          <View style={styles.landscapeIllustration} />
+        </View>
 
       <View style={styles.actions}> 
         <TouchableOpacity
@@ -47,22 +45,30 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.lg,
+    borderRadius: materialTheme.borderRadius.card,
     padding: materialTheme.spacing.lg,
     shadowColor: materialTheme.colors.shadow,
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
-  },
-  illustration: {
-    height: 180,
-    backgroundColor: materialTheme.colors.primaryContainer,
-    borderRadius: materialTheme.borderRadius.lg,
-    marginBottom: materialTheme.spacing.lg,
-    overflow: 'hidden',
-    justifyContent: 'center',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
     alignItems: 'center',
+  },
+  topIcon: {
+    position: 'absolute',
+    top: -24,
+    backgroundColor: materialTheme.colors.surface,
+    padding: 8,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: materialTheme.colors.outline,
+  },
+  landscapeIllustration: {
+    height: 220,
+    width: '100%',
+    marginTop: materialTheme.spacing.lg,
+    backgroundColor: materialTheme.colors.surfaceVariant,
+    borderRadius: materialTheme.borderRadius.card,
   },
   hill: {
     position: 'absolute',
@@ -103,25 +109,26 @@ const styles = StyleSheet.create({
     marginLeft: -6,
   },
   logo: {
-    color: materialTheme.colors.onSurface,
-    fontSize: 34,
+    color: materialTheme.colors.primaryDark,
+    fontSize: 30,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 8,
+    marginTop: 24,
   },
   subtitle: {
-    color: materialTheme.colors.onSurface,
-    fontSize: 16,
-    fontWeight: '400',
+    color: materialTheme.colors.textSecondary,
+    fontSize: 15,
+    fontWeight: '500',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
+    marginTop: 8,
   },
   actions: {
     paddingBottom: materialTheme.spacing.lg,
   },
   primaryButton: {
     backgroundColor: materialTheme.colors.primary,
-    borderRadius: materialTheme.borderRadius.md,
+    borderRadius: materialTheme.borderRadius.button,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: materialTheme.spacing.sm,

@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 export const FarmDetailScreen = ({ navigation, route }) => {
@@ -17,10 +19,14 @@ export const FarmDetailScreen = ({ navigation, route }) => {
     <View style={styles.screen}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>← Back</Text>
+          <Feather name="chevron-left" size={22} color={materialTheme.colors.primaryDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{farm.name}</Text>
-        <View style={styles.headerSpacer} />
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Feather name="settings" size={20} color={materialTheme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -102,7 +108,7 @@ const styles = StyleSheet.create({
   },
   mapCard: {
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: materialTheme.borderRadius.lg,
+    borderRadius: materialTheme.borderRadius.card,
     padding: materialTheme.spacing.md,
     marginBottom: materialTheme.spacing.md,
     shadowColor: materialTheme.colors.shadow,
@@ -119,8 +125,16 @@ const styles = StyleSheet.create({
   },
   mapPlaceholder: {
     height: 190,
-    borderRadius: materialTheme.borderRadius.lg,
-    backgroundColor: materialTheme.colors.primaryContainer,
+    borderRadius: materialTheme.borderRadius.card,
+    backgroundColor: materialTheme.colors.surfaceVariant,
+  },
+  headerActions: { width: 48, alignItems: 'flex-end' },
+  iconBtn: { padding: 8 },
+  wheatIllustration: {
+    height: 110,
+    width: 110,
+    backgroundColor: materialTheme.colors.surfaceVariant,
+    borderRadius: materialTheme.borderRadius.card,
   },
   statusRow: {
     flexDirection: 'row',
