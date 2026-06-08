@@ -1,55 +1,54 @@
-export const darkGreenTheme = {
+export const materialTheme = {
   colors: {
-    primary: '#1B5E20',      // Dark green
-    primaryLight: '#2E7D32', // Lighter dark green
-    primaryDark: '#0D3817',  // Very dark green
-    secondary: '#558B2F',    // Medium green
-    background: '#121212',   // Very dark background
-    surface: '#1E1E1E',      // Dark surface
-    text: '#FFFFFF',         // White text
-    textSecondary: '#B0B0B0', // Gray text
-    border: '#2A2A2A',       // Dark border
-    success: '#4CAF50',      // Green
-    warning: '#FFC107',      // Amber
-    error: '#F44336',        // Red
+    primary: '#267D32',
+    primaryContainer: '#E8F5E9',
+    secondary: '#81C784',
+    tertiary: '#FFB74D',
+    surface: '#F8FAF7',
+    surfaceVariant: '#F1F3EE',
+    background: '#F8FAF7',
+    onSurface: '#1C1B1F',
+    error: '#E53935',
+    outline: '#E0E0E0',
+    shadow: '#0000001A',
   },
   spacing: {
-    xs: 4,
-    sm: 8,
-    md: 16,
+    xs: 6,
+    sm: 12,
+    md: 18,
     lg: 24,
     xl: 32,
   },
   borderRadius: {
-    sm: 4,
-    md: 8,
-    lg: 12,
-    xl: 16,
+    sm: 10,
+    md: 12,
+    lg: 18,
+    xl: 24,
   },
   typography: {
-    heading1: {
+    titleLarge: {
       fontSize: 28,
       fontWeight: '700',
     },
-    heading2: {
-      fontSize: 24,
-      fontWeight: '600',
+    titleMedium: {
+      fontSize: 22,
+      fontWeight: '700',
     },
-    heading3: {
-      fontSize: 20,
-      fontWeight: '600',
-    },
-    body: {
+    bodyLarge: {
       fontSize: 16,
       fontWeight: '400',
     },
-    bodySmall: {
+    bodyMedium: {
       fontSize: 14,
       fontWeight: '400',
     },
-    caption: {
+    labelLarge: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    labelSmall: {
       fontSize: 12,
-      fontWeight: '400',
+      fontWeight: '500',
     },
   },
 };

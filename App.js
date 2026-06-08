@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
-import { darkGreenTheme } from './src/theme';
+import { materialTheme } from './src/theme';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { MyFarmsScreen } from './src/screens/MyFarmsScreen';
@@ -17,24 +17,24 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor={darkGreenTheme.colors.background} />
+      <StatusBar style="dark" backgroundColor={materialTheme.colors.background} />
       <NavigationContainer
         theme={{
-          dark: true,
+          dark: false,
           colors: {
-            primary: darkGreenTheme.colors.primary,
-            background: darkGreenTheme.colors.background,
-            card: darkGreenTheme.colors.surface,
-            text: darkGreenTheme.colors.text,
-            border: darkGreenTheme.colors.border,
-            notification: darkGreenTheme.colors.error,
+            primary: materialTheme.colors.primary,
+            background: materialTheme.colors.background,
+            card: materialTheme.colors.surface,
+            text: materialTheme.colors.onSurface,
+            border: materialTheme.colors.outline,
+            notification: materialTheme.colors.error,
           },
         }}
       >
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
-            cardStyle: { backgroundColor: darkGreenTheme.colors.background },
+            cardStyle: { backgroundColor: materialTheme.colors.background },
             animationEnabled: true,
           }}
           initialRouteName="Onboarding"
@@ -42,52 +42,14 @@ export default function App() {
           <Stack.Screen
             name="Onboarding"
             component={OnboardingScreen}
-            options={{
-              animationEnabled: false,
-            }}
+            options={{ animationEnabled: false }}
           />
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{
-              animationEnabled: true,
-            }}
-          />
-          <Stack.Screen
-            name="MyFarms"
-            component={MyFarmsScreen}
-            options={{
-              animationEnabled: true,
-            }}
-          />
-          <Stack.Screen
-            name="FarmDetail"
-            component={FarmDetailScreen}
-            options={{
-              animationEnabled: true,
-            }}
-          />
-          <Stack.Screen
-            name="AlertsFeed"
-            component={AlertsFeedScreen}
-            options={{
-              animationEnabled: true,
-            }}
-          />
-          <Stack.Screen
-            name="InterventionDetail"
-            component={InterventionDetailScreen}
-            options={{
-              animationEnabled: true,
-            }}
-          />
-          <Stack.Screen
-            name="Settings"
-            component={SettingsScreen}
-            options={{
-              animationEnabled: true,
-            }}
-          />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="MyFarms" component={MyFarmsScreen} />
+          <Stack.Screen name="FarmDetail" component={FarmDetailScreen} />
+          <Stack.Screen name="AlertsFeed" component={AlertsFeedScreen} />
+          <Stack.Screen name="InterventionDetail" component={InterventionDetailScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </>

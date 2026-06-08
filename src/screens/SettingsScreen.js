@@ -1,61 +1,79 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { materialTheme } from '../theme';
 
 export const SettingsScreen = ({ navigation }) => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [unitsMetric, setUnitsMetric] = useState(true);
   const [languageEnglish, setLanguageEnglish] = useState(true);
-  const [demoMode, setDemoMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screen}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={styles.headerSpacer} />
       </View>
 
-      {demoMode && (
-        <View style={styles.demoBanner}>
-          <Text style={styles.demoBannerText}>DEMO MODE ACTIVE</Text>
-        </View>
-      )}
-
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Push Notifications</Text>
-          <Switch
-            value={notificationsEnabled}
-            onValueChange={setNotificationsEnabled}
-            thumbColor={notificationsEnabled ? '#FFFFFF' : '#FFFFFF'}
-            trackColor={{ false: '#4b6f52', true: '#2e7d32' }}
-          />
+        <Text style={styles.sectionTitle}>Preferences</Text>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <View>
+              <Text style={styles.rowLabel}>Units</Text>
+              <Text style={styles.rowDetails}>{unitsMetric ? 'Metric' : 'Imperial'}</Text>
+            </View>
+            <Switch
+              value={unitsMetric}
+              onValueChange={setUnitsMetric}
+              trackColor={{ false: materialTheme.colors.outline, true: materialTheme.colors.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.row}>
+            <View>
+              <Text style={styles.rowLabel}>Language</Text>
+              <Text style={styles.rowDetails}>{languageEnglish ? 'English' : 'Hindi'}</Text>
+            </View>
+            <Switch
+              value={languageEnglish}
+              onValueChange={setLanguageEnglish}
+              trackColor={{ false: materialTheme.colors.outline, true: materialTheme.colors.primary }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.row}>
+            <View>
+              <Text style={styles.rowLabel}>Dark Mode</Text>
+              <Text style={styles.rowDetails}>Material theme comes in light mode</Text>
+            </View>
+            <Switch
+              value={darkMode}
+              onValueChange={setDarkMode}
+              trackColor={{ false: materialTheme.colors.outline, true: materialTheme.colors.error }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
         </View>
-        <View style={styles.divider} />
 
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Language</Text>
-          <Switch
-            value={languageEnglish}
-            onValueChange={setLanguageEnglish}
-            thumbColor={languageEnglish ? '#FFFFFF' : '#FFFFFF'}
-            trackColor={{ false: '#4b6f52', true: '#2e7d32' }}
-          />
-        </View>
-        <View style={styles.rowDetail}>
-          <Text style={styles.rowDetailText}>{languageEnglish ? 'English' : 'Hindi'}</Text>
-        </View>
-        <View style={styles.divider} />
-
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Demo Mode</Text>
-          <Switch
-            value={demoMode}
-            onValueChange={setDemoMode}
-            thumbColor={demoMode ? '#FFFFFF' : '#FFFFFF'}
-            trackColor={{ false: '#4b6f52', true: '#d32f2f' }}
-          />
+        <Text style={[styles.sectionTitle, { marginTop: materialTheme.spacing.lg }]}>About</Text>
+        <View style={styles.card}>
+          <TouchableOpacity style={styles.detailRow}>
+            <Text style={styles.rowLabel}>Version</Text>
+            <Text style={styles.rowDetails}>1.0.0</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.detailRow}>
+            <Text style={styles.rowLabel}>Rate the App</Text>
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.detailRow}>
+            <Text style={styles.rowLabel}>About CropSentinel</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -63,72 +81,75 @@ export const SettingsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: '#1a3c2e',
+    backgroundColor: materialTheme.colors.background,
   },
   header: {
-    paddingTop: 54,
-    paddingBottom: 18,
-    paddingHorizontal: 24,
+    paddingTop: materialTheme.spacing.xl,
+    paddingHorizontal: materialTheme.spacing.lg,
+    paddingBottom: materialTheme.spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#183526',
   },
   backText: {
-    color: '#A8E6A1',
-    fontSize: 16,
-    fontWeight: '600',
+    color: materialTheme.colors.primary,
+    fontSize: 18,
+    fontWeight: '700',
   },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: '800',
+    color: materialTheme.colors.onSurface,
+    fontSize: 20,
+    fontWeight: '700',
   },
   headerSpacer: {
-    width: 48,
-  },
-  demoBanner: {
-    backgroundColor: '#b71c1c',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  demoBannerText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 0.8,
+    width: 32,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    padding: materialTheme.spacing.lg,
+    paddingBottom: materialTheme.spacing.xl,
+  },
+  sectionTitle: {
+    color: materialTheme.colors.onSurface,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: materialTheme.spacing.sm,
+  },
+  card: {
+    backgroundColor: materialTheme.colors.surface,
+    borderRadius: materialTheme.borderRadius.lg,
+    padding: materialTheme.spacing.md,
+    shadowColor: materialTheme.colors.shadow,
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 18,
+    alignItems: 'center',
+    paddingVertical: materialTheme.spacing.sm,
+  },
+  detailRow: {
+    paddingVertical: materialTheme.spacing.sm,
   },
   rowLabel: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: materialTheme.colors.onSurface,
+    fontSize: 15,
     fontWeight: '600',
-    flex: 1,
-    marginRight: 12,
   },
-  rowDetail: {
-    paddingBottom: 18,
-  },
-  rowDetailText: {
-    color: '#B9E6B9',
-    fontSize: 14,
-    fontWeight: '500',
+  rowDetails: {
+    color: materialTheme.colors.onSurface,
+    opacity: 0.7,
+    marginTop: 4,
+    fontSize: 13,
   },
   divider: {
     height: 1,
-    backgroundColor: '#234b37',
+    backgroundColor: materialTheme.colors.outline,
+    marginVertical: materialTheme.spacing.sm,
   },
 });

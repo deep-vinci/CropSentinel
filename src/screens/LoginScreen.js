@@ -1,48 +1,65 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { materialTheme } from '../theme';
 
 export const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    navigation.replace('MyFarms');
-  };
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>CropSentinel</Text>
+    <View style={styles.screen}>
+      <View style={styles.headerArea}>
+        <Text style={styles.welcome}>Welcome back 🌿</Text>
+        <Text style={styles.subtitle}>Log in to view your farm insights and alerts.</Text>
       </View>
 
-      <View style={styles.formContainer}>
-        <Text style={styles.screenTitle}>Login</Text>
+      <View style={styles.formCard}>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="farmer@example.com"
+            placeholderTextColor={materialTheme.colors.onSurface + '99'}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#7A7A7A"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="********"
+            placeholderTextColor={materialTheme.colors.onSurface + '99'}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#7A7A7A"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => navigation.replace('MyFarms')}
+        >
+          <Text style={styles.primaryButtonText}>Login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.replace('Onboarding')}>
-          <Text style={styles.linkText}>New farmer?</Text>
+        <Text style={styles.orLabel}>or continue with</Text>
+
+        <View style={styles.socialRow}>
+          <TouchableOpacity style={styles.socialButton}>
+            <Text style={styles.socialText}>Google</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton}>
+            <Text style={styles.socialText}>Apple</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Onboarding')} style={styles.linkRow}>
+          <Text style={styles.linkText}>New farmer? </Text>
+          <Text style={[styles.linkText, styles.linkAction]}>Create Account</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -50,59 +67,106 @@ export const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: materialTheme.colors.background,
+    padding: materialTheme.spacing.lg,
+    justifyContent: 'space-between',
   },
-  header: {
-    paddingTop: 48,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
-    backgroundColor: '#1a3c2e',
-    justifyContent: 'center',
+  headerArea: {
+    marginTop: materialTheme.spacing.xl,
   },
-  headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  formContainer: {
-    flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'center',
-  },
-  screenTitle: {
+  welcome: {
     fontSize: 32,
-    fontWeight: '800',
-    color: '#1a3c2e',
-    marginBottom: 32,
+    fontWeight: '700',
+    color: materialTheme.colors.onSurface,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: materialTheme.colors.onSurface,
+    opacity: 0.8,
+    lineHeight: 24,
+  },
+  formCard: {
+    backgroundColor: materialTheme.colors.surface,
+    borderRadius: materialTheme.borderRadius.lg,
+    padding: materialTheme.spacing.lg,
+    shadowColor: materialTheme.colors.shadow,
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  inputGroup: {
+    marginBottom: materialTheme.spacing.md,
+  },
+  inputLabel: {
+    color: materialTheme.colors.onSurface,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    fontSize: 16,
-    marginBottom: 16,
+    backgroundColor: materialTheme.colors.background,
+    borderColor: materialTheme.colors.outline,
     borderWidth: 1,
-    borderColor: '#E2E2E2',
+    borderRadius: materialTheme.borderRadius.md,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    color: materialTheme.colors.onSurface,
+    fontSize: 16,
   },
-  button: {
-    backgroundColor: '#2e7d32',
-    borderRadius: 14,
+  primaryButton: {
+    backgroundColor: materialTheme.colors.primary,
+    borderRadius: materialTheme.borderRadius.md,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: materialTheme.spacing.sm,
   },
-  buttonText: {
+  primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },
-  linkText: {
-    color: '#2e7d32',
-    fontSize: 16,
+  orLabel: {
     textAlign: 'center',
-    marginTop: 20,
+    color: materialTheme.colors.onSurface,
+    opacity: 0.7,
+    marginVertical: materialTheme.spacing.md,
+    fontSize: 13,
+  },
+  socialRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  socialButton: {
+    flex: 1,
+    backgroundColor: materialTheme.colors.surfaceVariant,
+    borderRadius: materialTheme.borderRadius.md,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: materialTheme.colors.outline,
+  },
+  socialText: {
+    color: materialTheme.colors.onSurface,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  linkRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: materialTheme.spacing.md,
+  },
+  linkText: {
+    color: materialTheme.colors.onSurface,
+    fontSize: 14,
+    opacity: 0.75,
+  },
+  linkAction: {
+    color: materialTheme.colors.primary,
+    opacity: 1,
   },
 });

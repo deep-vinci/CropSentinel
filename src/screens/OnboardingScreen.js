@@ -1,62 +1,147 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { materialTheme } from '../theme';
 
 export default function OnboardingScreen({ navigation }) {
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>CropSentinel</Text>
-        <Text style={styles.tagline}>AI-powered farm intelligence</Text>
+    <View style={styles.screen}>
+      <View style={styles.heroCard}>
+        <View style={styles.illustration}>
+          <View style={styles.hill} />
+          <View style={styles.sun} />
+          <View style={styles.plantRow}>
+            <View style={styles.plantStem} />
+            <View style={styles.plantLeaf} />
+          </View>
+        </View>
+
+        <Text style={styles.logo}>CropSentinel</Text>
+        <Text style={styles.subtitle}>Intelligent farm insights with clean Material 3 styling.</Text>
       </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('Login')}
-      >
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
+      <View style={styles.actions}> 
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text style={styles.primaryButtonText}>Get Started</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.outlineButton}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text style={styles.outlineButtonText}>Login</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: '#1a3c2e',
-    paddingHorizontal: 24,
-    paddingVertical: 40,
+    backgroundColor: materialTheme.colors.background,
+    padding: materialTheme.spacing.lg,
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
-  content: {
-    flex: 1,
+  heroCard: {
+    backgroundColor: materialTheme.colors.surface,
+    borderRadius: materialTheme.borderRadius.lg,
+    padding: materialTheme.spacing.lg,
+    shadowColor: materialTheme.colors.shadow,
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  illustration: {
+    height: 180,
+    backgroundColor: materialTheme.colors.primaryContainer,
+    borderRadius: materialTheme.borderRadius.lg,
+    marginBottom: materialTheme.spacing.lg,
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
   },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
+  hill: {
+    position: 'absolute',
+    bottom: 0,
+    width: '120%',
+    height: 110,
+    backgroundColor: materialTheme.colors.secondary,
+    borderTopLeftRadius: 120,
+    borderTopRightRadius: 120,
   },
-  tagline: {
-    fontSize: 16,
-    color: '#90EE90',
-    textAlign: 'center',
-    marginTop: 10,
+  sun: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: materialTheme.colors.tertiary,
   },
-  button: {
-    backgroundColor: '#2e7d32',
-    paddingVertical: 16,
-    paddingHorizontal: 40,
-    borderRadius: 8,
-    width: '100%',
+  plantRow: {
+    position: 'absolute',
+    bottom: 28,
+    left: 32,
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  buttonText: {
+  plantStem: {
+    width: 8,
+    height: 60,
+    backgroundColor: materialTheme.colors.primary,
+    borderRadius: 4,
+  },
+  plantLeaf: {
+    width: 30,
+    height: 18,
+    backgroundColor: materialTheme.colors.secondary,
+    borderRadius: 12,
+    marginLeft: -6,
+  },
+  logo: {
+    color: materialTheme.colors.onSurface,
+    fontSize: 34,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: materialTheme.colors.onSurface,
+    fontSize: 16,
+    fontWeight: '400',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  actions: {
+    paddingBottom: materialTheme.spacing.lg,
+  },
+  primaryButton: {
+    backgroundColor: materialTheme.colors.primary,
+    borderRadius: materialTheme.borderRadius.md,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: materialTheme.spacing.sm,
+  },
+  primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  outlineButton: {
+    borderWidth: 1,
+    borderColor: materialTheme.colors.primary,
+    backgroundColor: materialTheme.colors.surface,
+    borderRadius: materialTheme.borderRadius.md,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  outlineButtonText: {
+    color: materialTheme.colors.primary,
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
