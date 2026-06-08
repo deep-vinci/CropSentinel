@@ -7,11 +7,11 @@ import { avatars, illustrations } from '../assets';
 
 export const SettingsScreen = ({ navigation }) => {
   const menuItems = [
-    { icon: 'home', label: 'Farm Details' },
-    { icon: 'settings', label: 'Account Settings' },
-    { icon: 'bell', label: 'Notification Settings' },
-    { icon: 'help-circle', label: 'Help & Support' },
-    { icon: 'info', label: 'About CropSentinel' },
+    { icon: 'home', label: 'Farm Details', route: 'MyFarms' },
+    { icon: 'settings', label: 'Account Settings', route: 'AccountSettings' },
+    { icon: 'bell', label: 'Notification Settings', route: 'NotificationSettings' },
+    { icon: 'help-circle', label: 'Help & Support', route: 'HelpSupport' },
+    { icon: 'info', label: 'About CropSentinel', route: 'About' },
   ];
 
   return (
@@ -32,7 +32,7 @@ export const SettingsScreen = ({ navigation }) => {
 
         <View style={styles.menuCard}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity key={item.label} style={[styles.menuItem, index < menuItems.length - 1 && styles.menuItemBorder]}>
+            <TouchableOpacity key={item.label} style={[styles.menuItem, index < menuItems.length - 1 && styles.menuItemBorder]} onPress={() => navigation.navigate(item.route)}>
               <View style={styles.menuLeft}>
                 <View style={styles.menuIconCircle}>
                   <Feather name={item.icon} size={18} color={materialTheme.colors.primary} />
@@ -46,7 +46,7 @@ export const SettingsScreen = ({ navigation }) => {
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Home</Text>
         </TouchableOpacity>

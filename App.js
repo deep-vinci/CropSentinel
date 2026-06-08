@@ -13,6 +13,10 @@ import { AlertsFeedScreen } from './src/screens/AlertsFeedScreen';
 import { InterventionDetailScreen } from './src/screens/InterventionDetailScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { AddFieldScreen } from './src/screens/AddFieldScreen';
+import { AccountSettingsScreen } from './src/screens/AccountSettingsScreen';
+import { NotificationSettingsScreen } from './src/screens/NotificationSettingsScreen';
+import { HelpSupportScreen } from './src/screens/HelpSupportScreen';
+import { AboutScreen } from './src/screens/AboutScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,11 +46,7 @@ export default function App() {
             }}
             initialRouteName="Onboarding"
           >
-            <Stack.Screen
-              name="Onboarding"
-              component={OnboardingScreen}
-              options={{ animationEnabled: false }}
-            />
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ animationEnabled: false }} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="MyFarms" component={MyFarmsScreen} />
             <Stack.Screen name="FarmDetail" component={FarmDetailScreen} />
@@ -54,6 +54,10 @@ export default function App() {
             <Stack.Screen name="InterventionDetail" component={InterventionDetailScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen name="AddField" component={AddFieldScreen} />
+            <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
+            <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
+            <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+            <Stack.Screen name="About" component={AboutScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </>

@@ -110,10 +110,10 @@ export const MyFarmsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <TouchableOpacity style={styles.menuBtn}>
+          <TouchableOpacity style={styles.menuBtn} onPress={() => navigation.navigate('Settings')}>
             <Feather name="menu" size={22} color={materialTheme.colors.onSurface} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.bellBtn}>
+          <TouchableOpacity style={styles.bellBtn} onPress={() => navigation.navigate('AlertsFeed')}>
             <Feather name="bell" size={20} color={materialTheme.colors.onSurface} />
           </TouchableOpacity>
         </View>
@@ -149,7 +149,7 @@ export const MyFarmsScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.bottomNavItemActive}>
+        <TouchableOpacity style={styles.bottomNavItemActive} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.primary} />
           <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>Home</Text>
         </TouchableOpacity>

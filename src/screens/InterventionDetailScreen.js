@@ -89,11 +89,11 @@ export const InterventionDetailScreen = ({ navigation }) => {
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="layers" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Farms</Text>
         </TouchableOpacity>
@@ -101,7 +101,7 @@ export const InterventionDetailScreen = ({ navigation }) => {
           <Feather name="bar-chart-2" size={20} color={materialTheme.colors.primary} />
           <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>Insights</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('AlertsFeed')}>
           <Feather name="bell" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Alerts</Text>
         </TouchableOpacity>

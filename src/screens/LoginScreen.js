@@ -98,10 +98,10 @@ const styles = StyleSheet.create({
   },
   decorativeLeaf: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 140,
-    height: 140,
+    top: -10,
+    right: -5,
+    width: 160,
+    height: 160,
     opacity: 0.15,
   },
   header: {

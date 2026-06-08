@@ -93,7 +93,7 @@ export const AlertsFeedScreen = ({ navigation }) => {
       )}
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Home</Text>
         </TouchableOpacity>

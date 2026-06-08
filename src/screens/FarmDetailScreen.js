@@ -27,7 +27,7 @@ export const FarmDetailScreen = ({ navigation, route }) => {
           <Feather name="arrow-left" size={22} color={materialTheme.colors.onSurface} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{farm.name}</Text>
-        <TouchableOpacity style={styles.settingsBtn}>
+        <TouchableOpacity style={styles.settingsBtn} onPress={() => navigation.navigate('Settings')}>
           <Feather name="settings" size={20} color={materialTheme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
@@ -97,7 +97,7 @@ export const FarmDetailScreen = ({ navigation, route }) => {
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Home</Text>
         </TouchableOpacity>
@@ -105,11 +105,11 @@ export const FarmDetailScreen = ({ navigation, route }) => {
           <Feather name="layers" size={20} color={materialTheme.colors.primary} />
           <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>Farms</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('InterventionDetail')}>
           <Feather name="bar-chart-2" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Insights</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomNavItem}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('AlertsFeed')}>
           <Feather name="bell" size={20} color={materialTheme.colors.textSecondary} />
           <Text style={styles.bottomNavText}>Alerts</Text>
         </TouchableOpacity>
