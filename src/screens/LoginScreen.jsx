@@ -52,11 +52,12 @@ export default function LoginScreen({ onLogin }) {
       </div>
 
       {/* Form */}
-      <div style={{
+      <div className="content-max" style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         padding: '0 24px',
         paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)',
         gap: 16, position: 'relative', zIndex: 10,
+        width: '100%', margin: '0 auto',
       }}>
         {/* Email */}
         <div>

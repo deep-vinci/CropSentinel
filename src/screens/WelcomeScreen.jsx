@@ -36,7 +36,7 @@ function LightWelcome({ onStart }) {
       <div style={{ flex:1, position:'relative', minHeight:0 }}>
         <img src={onboardingFarm} alt="Farm landscape" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'top center' }} />
         <div style={{ position:'absolute', inset:0, background:`linear-gradient(to bottom, transparent 55%, rgba(${bgRgb},0.80) 75%, rgba(${bgRgb},0.97) 92%)` }} />
-        <div style={{ position:'absolute', left:28, right:28, bottom:'calc(env(safe-area-inset-bottom,0px) + 32px)', zIndex:20 }}>
+        <div className="content-max" style={{ position:'absolute', left:0, right:0, bottom:'calc(env(safe-area-inset-bottom,0px) + 32px)', zIndex:20, padding:'0 28px', margin:'0 auto' }}>
           <GetStartedBtn onStart={onStart} />
         </div>
       </div>
@@ -60,7 +60,7 @@ function DarkWelcome({ onStart }) {
       <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(11,26,13,0.15) 40%, rgba(11,26,13,0.80) 68%, rgba(11,26,13,0.97) 84%)' }} />
 
       {/* Content — stacked at bottom like the reference */}
-      <div style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:10, display:'flex', flexDirection:'column', alignItems:'center', padding:'0 28px', paddingBottom:'calc(env(safe-area-inset-bottom,0px) + 36px)' }}>
+      <div className="content-max" style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:10, display:'flex', flexDirection:'column', alignItems:'center', padding:'0 28px', paddingBottom:'calc(env(safe-area-inset-bottom,0px) + 36px)', margin:'0 auto' }}>
 
         {/* Brand name */}
         <h1 style={{ fontSize:36, fontWeight:900, margin:'0 0 6px', lineHeight:1.1, letterSpacing:'-0.5px', textAlign:'center' }}>
