@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 export const LocationPickerScreen = ({ navigation }) => {
   const [selectedCoords, setSelectedCoords] = useState(null);
+  const [mapType, setMapType] = useState('standard');
 
   const handleMapPress = (e) => {
     setSelectedCoords(e.nativeEvent.coordinate);
@@ -33,7 +34,7 @@ export const LocationPickerScreen = ({ navigation }) => {
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
-          provider={PROVIDER_DEFAULT}
+          mapType={mapType}
           initialRegion={{
             latitude: 22.5937,
             longitude: 78.9629,
@@ -49,22 +50,47 @@ export const LocationPickerScreen = ({ navigation }) => {
             />
           )}
         </MapView>
+
+        {/* Floating MapType Segmented Control */}
+        <View style={styles.toggleContainer}>
+          <TouchableOpacity 
+            style={[styles.toggleBtn, mapType === 'standard' && styles.toggleBtnActive]}
+            onPress={() => setMapType('standard')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.toggleBtnText, mapType === 'standard' && styles.toggleBtnTextActive]}>
+              Standard
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.toggleBtn, mapType === 'satellite' && styles.toggleBtnActive]}
+            onPress={() => setMapType('satellite')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.toggleBtnText, mapType === 'satellite' && styles.toggleBtnTextActive]}>
+              Satellite
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.footer}>
-        {selectedCoords ? (
-          <View style={styles.coordsContainer}>
-            <Text style={styles.coordsLabel}>Selected Coordinates</Text>
-            <Text style={styles.coordsText}>
-              Latitude: {selectedCoords.latitude.toFixed(4)}
-            </Text>
-            <Text style={styles.coordsText}>
-              Longitude: {selectedCoords.longitude.toFixed(4)}
-            </Text>
-          </View>
-        ) : (
-          <Text style={styles.promptText}>Tap on the map to place your farm marker</Text>
-        )}
+        <Text style={styles.helperText}>
+          Tap anywhere on the map to select your farm location.
+        </Text>
+
+        <View style={styles.coordsContainer}>
+          {selectedCoords ? (
+            <>
+              <Text style={styles.coordsLabel}>Selected Location</Text>
+              <Text style={styles.coordsText}>
+                Latitude: {selectedCoords.latitude.toFixed(6)} | Longitude: {selectedCoords.longitude.toFixed(6)}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.errorPromptText}>Please choose a location.</Text>
+          )}
+        </View>
 
         <TouchableOpacity 
           style={[styles.confirmBtn, !selectedCoords && styles.confirmBtnDisabled]} 
@@ -112,9 +138,44 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     flex: 1,
+    position: 'relative',
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  toggleContainer: {
+    position: 'absolute',
+    top: 16,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 4,
+    elevation: 4,
+    shadowColor: '#000000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    zIndex: 10,
+  },
+  toggleBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
+  },
+  toggleBtnActive: {
+    backgroundColor: materialTheme.colors.primary,
+  },
+  toggleBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  toggleBtnTextActive: {
+    color: '#FFFFFF',
   },
   footer: {
     padding: 16,
@@ -123,26 +184,34 @@ const styles = StyleSheet.create({
     borderColor: materialTheme.colors.outline,
     alignItems: 'center',
   },
+  helperText: {
+    fontSize: 13,
+    color: '#666666',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   coordsContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
     marginBottom: 16,
   },
   coordsLabel: {
-    fontSize: 12,
-    color: materialTheme.colors.textSecondary,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 11,
+    color: materialTheme.colors.primary,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   coordsText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: materialTheme.colors.onSurface,
+    marginTop: 2,
   },
-  promptText: {
+  errorPromptText: {
     fontSize: 14,
-    color: materialTheme.colors.textSecondary,
-    marginBottom: 16,
-    textAlign: 'center',
+    fontWeight: '600',
+    color: materialTheme.colors.error,
   },
   confirmBtn: {
     width: '100%',
