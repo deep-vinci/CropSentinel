@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, Alert, ActivityIndicator, Share } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { materialTheme } from '../theme';
@@ -10,9 +10,11 @@ import { scheduleLocalAlert } from '../services/notifications';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
 import { useDemoState } from '../config/demoState';
 import { DemoBanner } from '../components/DemoBanner';
+import { translations } from '../constants/translations';
 
 export const InterventionDetailScreen = ({ navigation }) => {
-  const { isDemoMode, isDroughtSimulated, applyIntervention } = useDemoState();
+  const { isDemoMode, isDroughtSimulated, applyIntervention, language } = useDemoState();
+  const t = translations[language] || translations.en;
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -20,9 +22,45 @@ export const InterventionDetailScreen = ({ navigation }) => {
 
   const confidenceProgress = useSharedValue(0);
 
-  const [successVisible, setSuccessVisible] = useState(false);
-  const successScale = useSharedValue(0);
-  const successOpacity = useSharedValue(0);
+  const [isApplying, setIsApplying] = useState(false);
+  const [showSheet, setShowSheet] = useState(false);
+  const overlayOpacity = useSharedValue(0);
+  const sheetTranslateY = useSharedValue(500);
+
+  const handleMoreMenuPress = () => {
+    Alert.alert(
+      "Insights Options",
+      "Choose an option:",
+      [
+        { text: "Refresh Insights", onPress: () => loadIntervention(true) },
+        { text: "Export Summary", onPress: handleExportSummary },
+        { text: "Share Report", onPress: handleShareReport },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
+
+  const handleExportSummary = () => {
+    if (!details) return;
+    const summaryText = `CropSentinel Insights Report\nFarm: Marathwada Sugarcane Farm\nAction: ${details.action}\nCost: ${details.cost}\nYield Risk: ${details.risk}\nConfidence: ${Math.round(details.confidence * 100)}%`;
+    Alert.alert(
+      "Insights Export",
+      summaryText,
+      [{ text: "OK" }]
+    );
+  };
+
+  const handleShareReport = async () => {
+    if (!details) return;
+    const shareContent = {
+      message: `CropSentinel Insights Report\nFarm: Marathwada Sugarcane Farm\nAction: ${details.action}\nCost: ${details.cost}\nYield Risk: ${details.risk}\nConfidence: ${Math.round(details.confidence * 100)}%`,
+    };
+    try {
+      await Share.share(shareContent);
+    } catch (err) {
+      console.warn("Sharing failed:", err);
+    }
+  };
 
   const animatedProgressStyle = useAnimatedStyle(() => {
     return {
@@ -30,28 +68,52 @@ export const InterventionDetailScreen = ({ navigation }) => {
     };
   });
 
-  const successOverlayStyle = useAnimatedStyle(() => {
+  const overlayStyle = useAnimatedStyle(() => {
     return {
-      opacity: successOpacity.value,
-      transform: [{ scale: successScale.value }],
+      opacity: overlayOpacity.value,
     };
   });
 
-  const showSuccess = () => {
-    setSuccessVisible(true);
-    successScale.value = 0;
-    successOpacity.value = 0;
-    
-    successOpacity.value = withTiming(1, { duration: 300 });
-    successScale.value = withSpring(1, { damping: 12 });
+  const sheetStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: sheetTranslateY.value }],
+    };
+  });
 
-    setTimeout(() => {
-      successOpacity.value = withTiming(0, { duration: 250 });
-      successScale.value = withTiming(0.8, { duration: 250 });
+  const triggerApply = async () => {
+    setIsApplying(true);
+    // Simulate loading for 800ms
+    setTimeout(async () => {
+      setIsApplying(false);
+      setShowSheet(true);
+      
+      // Animate in
+      overlayOpacity.value = withTiming(0.5, { duration: 300 });
+      sheetTranslateY.value = withSpring(0, { damping: 15 });
+      
+      if (isDemoMode) {
+        applyIntervention(3); // Sugarcane farm
+      }
+      
+      // Local notification
+      await scheduleLocalAlert(
+        "CropSentinel Alert",
+        "Intervention applied successfully. Continue monitoring your farm."
+      );
+
+      // Auto-dismiss after 2.5 seconds
       setTimeout(() => {
-        setSuccessVisible(false);
-      }, 250);
-    }, 2200);
+        dismissSheet();
+      }, 2500);
+    }, 800);
+  };
+
+  const dismissSheet = () => {
+    overlayOpacity.value = withTiming(0, { duration: 250 });
+    sheetTranslateY.value = withTiming(500, { duration: 250 });
+    setTimeout(() => {
+      setShowSheet(false);
+    }, 250);
   };
 
   const loadIntervention = async (isRefreshing = false) => {
@@ -126,7 +188,7 @@ export const InterventionDetailScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Feather name="arrow-left" size={22} color={materialTheme.colors.onSurface} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Intervention</Text>
+          <Text style={styles.headerTitle}>{t.insights}</Text>
         </View>
         <LoadingState message="Loading intervention details..." />
       </SafeAreaView>
@@ -140,7 +202,7 @@ export const InterventionDetailScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Feather name="arrow-left" size={22} color={materialTheme.colors.onSurface} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Intervention</Text>
+          <Text style={styles.headerTitle}>{t.insights}</Text>
         </View>
         <ErrorState message={error} onRetry={() => loadIntervention(false)} />
       </SafeAreaView>
@@ -156,8 +218,8 @@ export const InterventionDetailScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Feather name="arrow-left" size={22} color={materialTheme.colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Intervention</Text>
-        <TouchableOpacity style={styles.moreBtn}>
+        <Text style={styles.headerTitle}>{t.insights}</Text>
+        <TouchableOpacity style={styles.moreBtn} onPress={handleMoreMenuPress}>
           <Feather name="more-vertical" size={20} color={materialTheme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
@@ -227,19 +289,15 @@ export const InterventionDetailScreen = ({ navigation }) => {
           </View>
 
           <TouchableOpacity 
-            style={styles.primaryBtn}
-            onPress={async () => {
-              if (isDemoMode) {
-                applyIntervention(3); // Sugarcane farm
-              }
-              await scheduleLocalAlert(
-                "CropSentinel Alert",
-                "Intervention applied successfully. Continue monitoring your farm."
-              );
-              showSuccess();
-            }}
+            style={[styles.primaryBtn, isApplying && styles.primaryBtnDisabled]}
+            disabled={isApplying}
+            onPress={triggerApply}
           >
-            <Text style={styles.primaryBtnText}>Apply Intervention</Text>
+            {isApplying ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.primaryBtnText}>{t.applyRecommendation}</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       ) : (
@@ -248,39 +306,56 @@ export const InterventionDetailScreen = ({ navigation }) => {
         </View>
       )}
 
-      {successVisible && (
-        <Animated.View style={[styles.successOverlay, successOverlayStyle]}>
-          <View style={styles.successModal}>
-            <View style={styles.successIconCircle}>
-              <Feather name="check" size={48} color="#FFFFFF" />
+      {showSheet && (
+        <View style={StyleSheet.absoluteFill}>
+          <Animated.View style={[styles.sheetOverlay, overlayStyle]}>
+            <TouchableOpacity style={styles.flex1} activeOpacity={1} onPress={dismissSheet} />
+          </Animated.View>
+          <Animated.View style={[styles.bottomSheet, sheetStyle]}>
+            <View style={styles.sheetHandle} />
+            <View style={styles.sheetHeader}>
+              <View style={styles.successBadge}>
+                <Feather name="check" size={16} color="#FFFFFF" />
+              </View>
+              <Text style={styles.sheetTitle}>{t.interventionApplied}</Text>
             </View>
-            <Text style={styles.successTitle}>Success</Text>
-            <Text style={styles.successMessage}>Intervention recorded successfully.</Text>
-          </View>
-        </Animated.View>
+            <Text style={styles.sheetText}>
+              {t.recordedSuccessfully}
+            </Text>
+            <View style={styles.yieldProtectionCard}>
+              <Text style={styles.yieldProtectionLabel}>{t.potentialYieldProtected}</Text>
+              <Text style={styles.yieldProtectionValue}>
+                {details ? details.risk : '₹45,000'}
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.sheetBtn} onPress={dismissSheet}>
+              <Text style={styles.sheetBtnText}>{t.done}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       )}
 
       {/* Bottom Nav Bar */}
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Home</Text>
+          <Text style={styles.bottomNavText}>{t.home}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="layers" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Farms</Text>
+          <Text style={styles.bottomNavText}>{t.farms}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItemActive}>
           <Feather name="bar-chart-2" size={20} color={materialTheme.colors.primary} />
-          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>Insights</Text>
+          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>{t.insights}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('AlertsFeed')}>
           <Feather name="bell" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Alerts</Text>
+          <Text style={styles.bottomNavText}>{t.alerts}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('Settings')}>
           <Feather name="user" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Profile</Text>
+          <Text style={styles.bottomNavText}>{t.profile}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -501,44 +576,100 @@ const styles = StyleSheet.create({
     color: materialTheme.colors.primary,
     fontWeight: '700',
   },
-  successOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 999,
+  primaryBtnDisabled: {
+    backgroundColor: '#A3A3A3',
+    opacity: 0.8,
   },
-  successModal: {
-    width: 280,
+  sheetOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000000',
+    zIndex: 998,
+  },
+  flex1: {
+    flex: 1,
+  },
+  bottomSheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: 24,
+    paddingBottom: 40,
     alignItems: 'center',
+    zIndex: 999,
     shadowColor: '#000000',
     shadowOpacity: 0.15,
     shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 10,
   },
-  successIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E5E5E0',
+    borderRadius: 2,
+    marginBottom: 16,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+  },
+  successBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#22C55E',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
   },
-  successTitle: {
+  sheetTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#1A1A1A',
-    marginBottom: 8,
   },
-  successMessage: {
+  sheetText: {
     fontSize: 14,
     color: '#7A7A7A',
     textAlign: 'center',
+    marginBottom: 20,
     lineHeight: 20,
+  },
+  yieldProtectionCard: {
+    width: '100%',
+    backgroundColor: '#F5F5F0',
+    borderWidth: 1,
+    borderColor: '#E5E5E0',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  yieldProtectionLabel: {
+    fontSize: 12,
+    color: '#7A7A7A',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  yieldProtectionValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#22C55E',
+  },
+  sheetBtn: {
+    width: '100%',
+    backgroundColor: '#267D32',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  sheetBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

@@ -18,7 +18,8 @@ export const AboutScreen = ({ navigation }) => {
         <View style={styles.aboutCard}>
           <MaterialCommunityIcons name="sprout" size={48} color={materialTheme.colors.primary} />
           <Text style={styles.appName}>CropSentinel</Text>
-          <Text style={styles.version}>Version 1.0.0</Text>
+          <Text style={styles.version}>Version: v1.0.0</Text>
+          <Text style={styles.hackathon}>Hackathon: FAR AWAY 2026</Text>
           <Text style={styles.description}>AI-Powered Farm Intelligence for healthier fields and better yields.</Text>
         </View>
       </ScrollView>
@@ -36,5 +37,6 @@ const styles = StyleSheet.create({
   aboutCard: { backgroundColor: materialTheme.colors.surface, borderRadius: materialTheme.borderRadius.card, padding: materialTheme.spacing.xl, alignItems: 'center', borderWidth: 1, borderColor: materialTheme.colors.outline },
   appName: { fontSize: 22, fontWeight: '700', color: materialTheme.colors.onSurface, marginTop: materialTheme.spacing.md },
   version: { fontSize: 14, color: materialTheme.colors.textSecondary, marginTop: materialTheme.spacing.xs },
+  hackathon: { fontSize: 14, fontWeight: '600', color: materialTheme.colors.primary, marginTop: materialTheme.spacing.xs },
   description: { fontSize: 15, color: materialTheme.colors.textSecondary, textAlign: 'center', marginTop: materialTheme.spacing.md, lineHeight: 22 },
 });

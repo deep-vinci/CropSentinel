@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Switch, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { materialTheme } from '../theme';
 import { avatars, illustrations } from '../assets';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 import { useDemoState } from '../config/demoState';
+import { translations } from '../constants/translations';
 
 export const SettingsScreen = ({ navigation }) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const { isDemoMode, setDemoMode, setDroughtSimulated } = useDemoState();
-
+  const { 
+    isDemoMode, 
+    setDemoMode, 
+    setDroughtSimulated, 
+    language, 
+    setLanguage,
+    profileName,
+    profileEmail 
+  } = useDemoState();
 
   const handleToggleNotifications = async (value) => {
     setNotificationsEnabled(value);
@@ -19,12 +27,13 @@ export const SettingsScreen = ({ navigation }) => {
     }
   };
 
+  const t = translations[language] || translations.en;
+
   const menuItems = [
-    { icon: 'home', label: 'Farm Details', route: 'MyFarms' },
-    { icon: 'settings', label: 'Account Settings', route: 'AccountSettings' },
-    { icon: 'bell', label: 'Notification Settings', route: 'NotificationSettings' },
-    { icon: 'help-circle', label: 'Help & Support', route: 'HelpSupport' },
-    { icon: 'info', label: 'About CropSentinel', route: 'About' },
+    { icon: 'settings', label: t.accountSettings, route: 'AccountSettings' },
+    { icon: 'bell', label: t.notificationSettings, route: 'NotificationSettings' },
+    { icon: 'help-circle', label: t.helpSupport, route: 'HelpSupport' },
+    { icon: 'info', label: t.aboutCropSentinel, route: 'About' },
   ];
 
   return (
@@ -32,7 +41,7 @@ export const SettingsScreen = ({ navigation }) => {
       <Image source={illustrations.settingsLeaves} style={styles.decorativeLeaf} resizeMode="contain" />
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={styles.headerTitle}>{t.profile}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -40,8 +49,8 @@ export const SettingsScreen = ({ navigation }) => {
           <Image source={illustrations.profileLeaves} style={styles.heroLeaves} resizeMode="contain" />
           <Image source={illustrations.settingsLeaves} style={styles.heroLeavesSecondary} resizeMode="contain" />
           <Image source={avatars.farmer} style={styles.avatar} resizeMode="cover" />
-          <Text style={styles.profileName}>Ramesh Kumar</Text>
-          <Text style={styles.profileEmail}>ramesh@example.com</Text>
+          <Text style={styles.profileName}>{profileName}</Text>
+          <Text style={styles.profileEmail}>{profileEmail}</Text>
         </View>
 
         <View style={styles.menuCard}>
@@ -59,13 +68,13 @@ export const SettingsScreen = ({ navigation }) => {
         </View>
 
         <View style={[styles.menuCard, { marginTop: materialTheme.spacing.md }]}>
-          <View style={styles.preferenceItem}>
+          <View style={[styles.preferenceItem, { borderBottomWidth: 1, borderBottomColor: materialTheme.colors.outline }]}>
             <View style={styles.menuLeft}>
               <View style={styles.menuIconCircle}>
                 <Feather name="bell" size={18} color={materialTheme.colors.primary} />
               </View>
-              <View>
-                <Text style={styles.menuLabel}>Push Notifications</Text>
+              <View style={styles.flexShrink1}>
+                <Text style={styles.menuLabel}>{t.pushNotifications}</Text>
                 <Text style={styles.preferenceSublabel}>Receive alerts about farm health</Text>
               </View>
             </View>
@@ -76,11 +85,37 @@ export const SettingsScreen = ({ navigation }) => {
               thumbColor={notificationsEnabled ? '#FFFFFF' : '#F4F3F0'}
             />
           </View>
+          
+          <TouchableOpacity 
+            style={styles.preferenceItem}
+            onPress={() => {
+              Alert.alert(
+                "Select Language / भाषा चुनें",
+                "Choose your preferred language:",
+                [
+                  { text: "English", onPress: () => setLanguage('en') },
+                  { text: "हिंदी (Hindi)", onPress: () => setLanguage('hi') },
+                  { text: "Cancel / रद्द करें", style: "cancel" }
+                ]
+              );
+            }}
+          >
+            <View style={styles.menuLeft}>
+              <View style={styles.menuIconCircle}>
+                <Feather name="globe" size={18} color={materialTheme.colors.primary} />
+              </View>
+              <View>
+                <Text style={styles.menuLabel}>Language / भाषा</Text>
+                <Text style={styles.preferenceSublabel}>{language === 'en' ? 'English' : 'हिंदी (Hindi)'}</Text>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={18} color={materialTheme.colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         <View style={[styles.menuCard, { marginTop: materialTheme.spacing.md }]}>
           <View style={styles.demoHeaderContainer}>
-            <Text style={styles.demoTitle}>Demo Mode</Text>
+            <Text style={styles.demoTitle}>{t.demoMode}</Text>
             <Text style={styles.demoDescription}>Enable a guided hackathon demonstration experience.</Text>
           </View>
           <View style={styles.preferenceItem}>
@@ -88,8 +123,8 @@ export const SettingsScreen = ({ navigation }) => {
               <View style={styles.menuIconCircle}>
                 <Feather name="play" size={18} color={materialTheme.colors.primary} />
               </View>
-              <View>
-                <Text style={styles.menuLabel}>Enable Demo Scenario</Text>
+              <View style={styles.flexShrink1}>
+                <Text style={styles.menuLabel}>{t.enableDemoScenario}</Text>
                 <Text style={styles.preferenceSublabel}>Toggles hackathon simulation mode</Text>
               </View>
             </View>
@@ -111,23 +146,23 @@ export const SettingsScreen = ({ navigation }) => {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Home</Text>
+          <Text style={styles.bottomNavText}>{t.home}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="layers" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Farms</Text>
+          <Text style={styles.bottomNavText}>{t.farms}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('InterventionDetail')}>
           <Feather name="bar-chart-2" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Insights</Text>
+          <Text style={styles.bottomNavText}>{t.insights}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('AlertsFeed')}>
           <Feather name="bell" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Alerts</Text>
+          <Text style={styles.bottomNavText}>{t.alerts}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItemActive}>
           <Feather name="user" size={20} color={materialTheme.colors.primary} />
-          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>Profile</Text>
+          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>{t.profile}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -300,5 +335,8 @@ const styles = StyleSheet.create({
     color: materialTheme.colors.textSecondary,
     marginTop: 2,
     lineHeight: 16,
+  },
+  flexShrink1: {
+    flexShrink: 1,
   },
 });

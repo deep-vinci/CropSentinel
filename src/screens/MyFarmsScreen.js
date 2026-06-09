@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, RefreshControl, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, RefreshControl, Animated, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { useDemoState } from '../config/demoState';
 import { DemoBanner } from '../components/DemoBanner';
+import { translations } from '../constants/translations';
 
 const FadeInCard = ({ children, delay = 0 }) => {
   const animatedValue = React.useRef(new Animated.Value(0)).current;
@@ -100,13 +101,45 @@ const SkeletonCard = () => (
 );
 
 export const MyFarmsScreen = ({ navigation }) => {
-  const { isDemoMode, isDroughtSimulated } = useDemoState();
+  const { isDemoMode, isDroughtSimulated, language } = useDemoState();
+  const t = translations[language] || translations.en;
   const [farms, setFarms] = useState([]);
   const [summary, setSummary] = useState(null);
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleFarmMenuPress = (farm) => {
+    Alert.alert(
+      `${farm.name} Options`,
+      "Choose an action:",
+      [
+        { text: "View Details", onPress: () => navigation.navigate('FarmDetail', { farm }) },
+        { text: "Edit Farm", onPress: () => navigation.navigate('AddField', { farm }) },
+        { text: "Delete Farm", style: "destructive", onPress: () => handleDeleteFarm(farm) },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
+
+  const handleDeleteFarm = (farm) => {
+    Alert.alert(
+      "Delete Farm",
+      `Are you sure you want to delete ${farm.name}? This action cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: () => {
+            setFarms(prev => prev.filter(f => f.id !== farm.id));
+            Alert.alert("Deleted", "Farm deleted successfully.");
+          } 
+        }
+      ]
+    );
+  };
 
   const loadDashboardData = async (isRefreshing = false) => {
     if (isRefreshing) {
@@ -326,7 +359,7 @@ export const MyFarmsScreen = ({ navigation }) => {
 
             {/* Section Header */}
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>My Farms</Text>
+              <Text style={styles.sectionTitle}>{t.myFarms}</Text>
               <Text style={styles.sectionCount}>
                 {farms.length} Farms • 1 Alert
               </Text>
@@ -369,6 +402,15 @@ export const MyFarmsScreen = ({ navigation }) => {
                         </View>
                       </View>
                       <View style={styles.farmCardRight}>
+                        <TouchableOpacity 
+                          style={styles.moreMenuBtn} 
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            handleFarmMenuPress(item);
+                          }}
+                        >
+                          <Feather name="more-vertical" size={18} color={materialTheme.colors.textSecondary} />
+                        </TouchableOpacity>
                         <View style={[styles.healthCircle, { borderColor: getHealthColor(item.healthScore) }]}>
                           <Text style={styles.healthScore}>{item.healthScore}</Text>
                           <Text style={styles.healthLabel}>/100</Text>
@@ -392,23 +434,23 @@ export const MyFarmsScreen = ({ navigation }) => {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomNavItemActive} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.primary} />
-          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>Home</Text>
+          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>{t.home}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="layers" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Farms</Text>
+          <Text style={styles.bottomNavText}>{t.farms}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('InterventionDetail')}>
           <Feather name="bar-chart-2" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Insights</Text>
+          <Text style={styles.bottomNavText}>{t.insights}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('AlertsFeed')}>
           <Feather name="bell" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Alerts</Text>
+          <Text style={styles.bottomNavText}>{t.alerts}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('Settings')}>
           <Feather name="user" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Profile</Text>
+          <Text style={styles.bottomNavText}>{t.profile}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -882,5 +924,12 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: '#F5F5F0',
     alignSelf: 'center',
+  },
+  moreMenuBtn: {
+    position: 'absolute',
+    top: -6,
+    right: -10,
+    padding: 8,
+    zIndex: 10,
   },
 });

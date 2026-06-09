@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl, Image, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl, Image, Animated, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
@@ -8,6 +8,7 @@ import { fetchAlerts } from '../services';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { useDemoState } from '../config/demoState';
+import { translations } from '../constants/translations';
 
 const FadeInCard = ({ children, delay = 0 }) => {
   const animatedValue = React.useRef(new Animated.Value(0)).current;
@@ -37,7 +38,8 @@ const FadeInCard = ({ children, delay = 0 }) => {
 };
 
 export const AlertsFeedScreen = ({ navigation }) => {
-  const { isDemoMode, isDroughtSimulated } = useDemoState();
+  const { isDemoMode, isDroughtSimulated, language } = useDemoState();
+  const t = translations[language] || translations.en;
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -120,7 +122,7 @@ export const AlertsFeedScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Alerts</Text>
+          <Text style={styles.headerTitle}>{t.alerts}</Text>
         </View>
         <LoadingState message="Fetching alerts..." />
       </SafeAreaView>
@@ -131,7 +133,7 @@ export const AlertsFeedScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Alerts</Text>
+          <Text style={styles.headerTitle}>{t.alerts}</Text>
         </View>
         <ErrorState message={error} onRetry={() => loadAlerts(false)} />
       </SafeAreaView>
@@ -163,7 +165,7 @@ export const AlertsFeedScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Alerts</Text>
+        <Text style={styles.headerTitle}>{t.alerts}</Text>
         {!loading && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>
@@ -205,23 +207,23 @@ export const AlertsFeedScreen = ({ navigation }) => {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="home" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Home</Text>
+          <Text style={styles.bottomNavText}>{t.home}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('MyFarms')}>
           <Feather name="layers" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Farms</Text>
+          <Text style={styles.bottomNavText}>{t.farms}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('InterventionDetail')}>
           <Feather name="bar-chart-2" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Insights</Text>
+          <Text style={styles.bottomNavText}>{t.insights}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItemActive}>
           <Feather name="bell" size={20} color={materialTheme.colors.primary} />
-          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>Alerts</Text>
+          <Text style={[styles.bottomNavText, styles.bottomNavTextActive]}>{t.alerts}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => navigation.navigate('Settings')}>
           <Feather name="user" size={20} color={materialTheme.colors.textSecondary} />
-          <Text style={styles.bottomNavText}>Profile</Text>
+          <Text style={styles.bottomNavText}>{t.profile}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -1,15 +1,107 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
-export const AddFieldScreen = ({ navigation }) => {
+export const AddFieldScreen = ({ navigation, route }) => {
+  const farmToEdit = route.params?.farm;
+  const isEditMode = !!farmToEdit;
+
   const [fieldName, setFieldName] = useState('');
   const [cropType, setCropType] = useState('');
   const [fieldArea, setFieldArea] = useState('');
   const [soilType, setSoilType] = useState('');
   const [location, setLocation] = useState('');
+
+  useEffect(() => {
+    if (isEditMode) {
+      setFieldName(farmToEdit.name || '');
+      setCropType(farmToEdit.cropType || farmToEdit.crop_type || '');
+      setFieldArea(farmToEdit.area || '5.0');
+      setSoilType(farmToEdit.soilType || 'Alluvial');
+      setLocation(farmToEdit.location || 'Marathwada (19.87, 75.34)');
+    }
+  }, [farmToEdit]);
+
+  const handleSelectCrop = () => {
+    Alert.alert(
+      "Select Crop Type",
+      "Choose the crop planted in this field:",
+      [
+        { text: "Wheat", onPress: () => setCropType("Wheat") },
+        { text: "Rice", onPress: () => setCropType("Rice") },
+        { text: "Corn", onPress: () => setCropType("Corn") },
+        { text: "Sugarcane", onPress: () => setCropType("Sugarcane") },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
+
+  const handleSelectSoil = () => {
+    Alert.alert(
+      "Select Soil Type",
+      "Choose the soil type of this field:",
+      [
+        { text: "Alluvial", onPress: () => setSoilType("Alluvial") },
+        { text: "Clayey", onPress: () => setSoilType("Clayey") },
+        { text: "Sandy", onPress: () => setSoilType("Sandy") },
+        { text: "Loamy", onPress: () => setSoilType("Loamy") },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
+
+  const handleSelectLocation = () => {
+    Alert.alert(
+      "Select Location",
+      "Simulate selecting location on satellite map:",
+      [
+        { text: "Use Punjab GPS Location", onPress: () => setLocation("Punjab (30.90, 75.85)") },
+        { text: "Use Kaveri Delta GPS", onPress: () => setLocation("Tamil Nadu (10.91, 79.36)") },
+        { text: "Use Marathwada GPS", onPress: () => setLocation("Maharashtra (19.87, 75.34)") },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
+
+  const handleSave = () => {
+    if (!fieldName.trim()) {
+      Alert.alert("ValidationError", "Please enter a field name.");
+      return;
+    }
+    if (!cropType) {
+      Alert.alert("ValidationError", "Please select a crop type.");
+      return;
+    }
+    if (!fieldArea.trim() || isNaN(Number(fieldArea))) {
+      Alert.alert("ValidationError", "Please enter a valid numeric area in acres.");
+      return;
+    }
+    if (!soilType) {
+      Alert.alert("ValidationError", "Please select a soil type.");
+      return;
+    }
+    if (!location) {
+      Alert.alert("ValidationError", "Please select a location.");
+      return;
+    }
+
+    // Success State
+    const successMsg = isEditMode ? "Farm updated successfully." : "Farm added successfully.";
+    Alert.alert(
+      "Success",
+      successMsg,
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            navigation.goBack();
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -17,7 +109,7 @@ export const AddFieldScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Feather name="arrow-left" size={22} color={materialTheme.colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Field</Text>
+        <Text style={styles.headerTitle}>{isEditMode ? "Edit Farm" : "Add New Field"}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -35,8 +127,10 @@ export const AddFieldScreen = ({ navigation }) => {
 
         <View style={styles.fieldGroup}>
           <Text style={styles.fieldLabel}>Select Crop Type</Text>
-          <TouchableOpacity style={styles.fieldSelect}>
-            <Text style={styles.fieldSelectText}>Choose crop</Text>
+          <TouchableOpacity style={styles.fieldSelect} onPress={handleSelectCrop}>
+            <Text style={[styles.fieldSelectText, cropType && { color: materialTheme.colors.onSurface }]}>
+              {cropType || "Choose crop"}
+            </Text>
             <Feather name="chevron-down" size={18} color={materialTheme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
@@ -55,25 +149,29 @@ export const AddFieldScreen = ({ navigation }) => {
 
         <View style={styles.fieldGroup}>
           <Text style={styles.fieldLabel}>Soil Type</Text>
-          <TouchableOpacity style={styles.fieldSelect}>
-            <Text style={styles.fieldSelectText}>Choose soil type</Text>
+          <TouchableOpacity style={styles.fieldSelect} onPress={handleSelectSoil}>
+            <Text style={[styles.fieldSelectText, soilType && { color: materialTheme.colors.onSurface }]}>
+              {soilType || "Choose soil type"}
+            </Text>
             <Feather name="chevron-down" size={18} color={materialTheme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.fieldGroup}>
           <Text style={styles.fieldLabel}>Location</Text>
-          <TouchableOpacity style={styles.fieldSelect}>
+          <TouchableOpacity style={styles.fieldSelect} onPress={handleSelectLocation}>
             <View style={styles.fieldSelectLeft}>
               <Feather name="map-pin" size={16} color={materialTheme.colors.textSecondary} />
-              <Text style={styles.fieldSelectText}>Select on map</Text>
+              <Text style={[styles.fieldSelectText, location && { color: materialTheme.colors.onSurface }]}>
+                {location || "Select on map"}
+              </Text>
             </View>
             <Feather name="chevron-right" size={18} color={materialTheme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.saveBtn}>
-          <Text style={styles.saveBtnText}>Save Field</Text>
+        <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+          <Text style={styles.saveBtnText}>{isEditMode ? "Update Farm" : "Save Field"}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

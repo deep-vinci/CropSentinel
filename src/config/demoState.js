@@ -5,7 +5,10 @@ let state = {
   isDemoMode: false,
   isDroughtSimulated: false,
   appliedInterventions: {}, // map of farmId -> boolean
-  extraAlerts: [] // list of simulated alerts
+  extraAlerts: [], // list of simulated alerts
+  language: 'en',
+  profileName: 'Ramesh Kumar',
+  profileEmail: 'ramesh@example.com'
 };
 
 const listeners = new Set();
@@ -25,7 +28,10 @@ export const demoState = {
       isDemoMode: false,
       isDroughtSimulated: false,
       appliedInterventions: {},
-      extraAlerts: []
+      extraAlerts: [],
+      language: 'en',
+      profileName: 'Ramesh Kumar',
+      profileEmail: 'ramesh@example.com'
     };
     updateListeners();
   }
@@ -59,12 +65,19 @@ export const useDemoState = () => {
     demoState.set({ extraAlerts: alerts });
   };
 
+  const setLanguage = (lang) => demoState.set({ language: lang });
+  const setProfileName = (name) => demoState.set({ profileName: name });
+  const setProfileEmail = (email) => demoState.set({ profileEmail: email });
+
   return {
     ...localState,
     setDemoMode,
     setDroughtSimulated,
     applyIntervention,
     addAlert,
+    setLanguage,
+    setProfileName,
+    setProfileEmail,
     resetDemo: demoState.reset
   };
 };
