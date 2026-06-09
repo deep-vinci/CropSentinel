@@ -1,12 +1,131 @@
 @import "tailwindcss";
+/* Inter is now loaded via <link> in index.html for faster LCP */
 
-:root {
-  color-scheme: dark;
+@theme {
+  --color-brand: #4A7C59;
+  --color-brand-dark: #3d6b4a;
+  --color-brand-light: #6B9E7A;
+  --color-cream: #F8F6F0;
+  --color-cream-dark: #EDE8DC;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #1A2416;
+  --color-text-secondary: #5A6B52;
+  --color-text-muted: #8A9A82;
+  --color-border: #E8E4D8;
+  --color-danger: #DC2626;
+  --color-warning: #D97706;
+  --color-success: #16A34A;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+* {
+  box-sizing: border-box;
+}
+
+/*
+  Edge-to-Edge rendering:
+  html/body must fill the FULL display including behind the status bar.
+  We then add safe-area padding on the elements that need it (nav, headers)
+  using env(safe-area-inset-*) so nothing hides under a notch or
+  home-indicator bar.
+*/
+html {
+  height: 100%;
+  /* Extend background colour into the status-bar zone */
+  background-color: #F8F6F0;
 }
 
 body {
-  background-color: #121212;
-  color: #e5e5e5;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  /* Prevents rubber-band bounce exposing white behind the app on iOS */
+  overscroll-behavior: none;
+}
+
+/* CSS custom properties for safe-area insets — used by JS/React components */
+:root {
+  --safe-top:    env(safe-area-inset-top,    0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left,   0px);
+  --safe-right:  env(safe-area-inset-right,  0px);
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  /*
+    DO NOT add padding-top here.
+    Each screen is responsible for padding its own content below the
+    status bar using env(safe-area-inset-top) inline.
+    The background of html/body/App already fills behind the status bar.
+  */
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #F8F6F0;
+  color: #1A2416;
+}
+
+/* Custom scrollbar — only visible inside scrollable areas */
+.scroll-area::-webkit-scrollbar {
+  width: 3px;
+}
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-area::-webkit-scrollbar-thumb {
+  background-color: #D4D0C8;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Status badge colors */
+.badge-danger  { background: #FEE2E2; color: #DC2626; }
+.badge-success { background: #DCFCE7; color: #16A34A; }
+.badge-warning { background: #FEF3C7; color: #D97706; }
+
+/* Circular health score ring */
+.ring-danger  { stroke: #EA580C; }
+.ring-success { stroke: #22C55E; }
+.ring-muted   { stroke: #E5E7EB; }
+
+/* Card shadow */
+.card-shadow {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+.card-shadow-md {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+}
+
+/* Green button glow */
+.btn-primary {
+  background: #4A7C59;
+  color: #ffffff;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 24px;
+  width: 100%;
+  transition: all 0.15s ease;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: #3d6b4a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(74,124,89,0.35);
+}
+.btn-primary:active {
+  transform: translateY(0);
 }
