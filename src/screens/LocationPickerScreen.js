@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
@@ -21,6 +21,13 @@ export const LocationPickerScreen = ({ navigation }) => {
     navigation.navigate('AddField', { selectedLocation: selectedCoords });
   };
 
+  const getTileUrl = () => {
+    if (mapType === 'satellite') {
+      return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+    }
+    return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  };
+
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.header}>
@@ -34,15 +41,23 @@ export const LocationPickerScreen = ({ navigation }) => {
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
-          mapType={mapType}
+          mapType={Platform.OS === 'android' ? 'none' : mapType}
           initialRegion={{
             latitude: 22.5937,
             longitude: 78.9629,
-            latitudeDelta: 12,
-            longitudeDelta: 12,
+            latitudeDelta: 10,
+            longitudeDelta: 10,
           }}
           onPress={handleMapPress}
         >
+          {Platform.OS === 'android' && (
+            <UrlTile
+              key={mapType}
+              urlTemplate={getTileUrl()}
+              maximumZ={19}
+              flipY={false}
+            />
+          )}
           {selectedCoords && (
             <Marker 
               coordinate={selectedCoords} 
