@@ -34,8 +34,7 @@ function LightWelcome({ onStart }) {
 
       {/* Hero image */}
       <div style={{ flex:1, position:'relative', minHeight:0 }}>
-        <img src={onboardingFarm} alt="Farm landscape" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'top center' }} />
-        <div style={{ position:'absolute', inset:0, background:`linear-gradient(to bottom, transparent 55%, rgba(${bgRgb},0.80) 75%, rgba(${bgRgb},0.97) 92%)` }} />
+        <img src={onboardingFarm} alt="Farm landscape" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'bottom center' }} />
         <div className="content-max" style={{ position:'absolute', left:0, right:0, bottom:'calc(env(safe-area-inset-bottom,0px) + 32px)', zIndex:20, padding:'0 28px', margin:'0 auto' }}>
           <GetStartedBtn onStart={onStart} />
         </div>
@@ -53,7 +52,7 @@ function DarkWelcome({ onStart }) {
       <img
         src={darkSatelliteBg}
         alt=""
-        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center top', pointerEvents:'none' }}
+        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center bottom', pointerEvents:'none' }}
       />
 
       {/* Subtle dark gradient over the whole screen for legibility */}
