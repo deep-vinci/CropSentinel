@@ -1,121 +1,119 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { materialTheme } from '../theme';
 
 export const LocationPickerScreen = ({ navigation }) => {
-  const [selectedCoords, setSelectedCoords] = useState(null);
-  const [mapType, setMapType] = useState('standard');
-
-  const handleMapPress = (e) => {
-    setSelectedCoords(e.nativeEvent.coordinate);
-  };
+  const [latText, setLatText] = useState('');
+  const [lonText, setLonText] = useState('');
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleConfirm = () => {
-    if (!selectedCoords) {
+    setErrorMsg(null);
+    const parsedLat = parseFloat(latText);
+    const parsedLon = parseFloat(lonText);
+
+    if (isNaN(parsedLat) || parsedLat < -90 || parsedLat > 90) {
+      setErrorMsg('Latitude must be a valid number between -90 and 90.');
       return;
     }
-    // Navigate back to AddField screen passing coordinates
-    navigation.navigate('AddField', { selectedLocation: selectedCoords });
+
+    if (isNaN(parsedLon) || parsedLon < -180 || parsedLon > 180) {
+      setErrorMsg('Longitude must be a valid number between -180 and 180.');
+      return;
+    }
+
+    // Return to AddField screen passing coordinates
+    navigation.navigate('AddField', {
+      selectedLocation: {
+        latitude: parsedLat,
+        longitude: parsedLon,
+      },
+    });
   };
 
-  const getTileUrl = () => {
-    if (mapType === 'satellite') {
-      return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-    }
-    return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-  };
+  const isButtonDisabled = !latText.trim() || !lonText.trim();
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Feather name="arrow-left" size={22} color={materialTheme.colors.onSurface} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Choose Location</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          mapType={Platform.OS === 'android' ? 'none' : mapType}
-          initialRegion={{
-            latitude: 22.5937,
-            longitude: 78.9629,
-            latitudeDelta: 10,
-            longitudeDelta: 10,
-          }}
-          onPress={handleMapPress}
-        >
-          {Platform.OS === 'android' && (
-            <UrlTile
-              key={mapType}
-              urlTemplate={getTileUrl()}
-              maximumZ={19}
-              flipY={false}
-            />
-          )}
-          {selectedCoords && (
-            <Marker 
-              coordinate={selectedCoords} 
-              pinColor={materialTheme.colors.primary} 
-            />
-          )}
-        </MapView>
-
-        {/* Floating MapType Segmented Control */}
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity 
-            style={[styles.toggleBtn, mapType === 'standard' && styles.toggleBtnActive]}
-            onPress={() => setMapType('standard')}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.toggleBtnText, mapType === 'standard' && styles.toggleBtnTextActive]}>
-              Standard
-            </Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Feather name="arrow-left" size={22} color={materialTheme.colors.onSurface} />
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.toggleBtn, mapType === 'satellite' && styles.toggleBtnActive]}
-            onPress={() => setMapType('satellite')}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.toggleBtnText, mapType === 'satellite' && styles.toggleBtnTextActive]}>
-              Satellite
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.helperText}>
-          Tap anywhere on the map to select your farm location.
-        </Text>
-
-        <View style={styles.coordsContainer}>
-          {selectedCoords ? (
-            <>
-              <Text style={styles.coordsLabel}>Selected Location</Text>
-              <Text style={styles.coordsText}>
-                Latitude: {selectedCoords.latitude.toFixed(6)} | Longitude: {selectedCoords.longitude.toFixed(6)}
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.errorPromptText}>Please choose a location.</Text>
-          )}
+          <Text style={styles.headerTitle}>Farm Coordinates</Text>
+          <View style={styles.headerSpacer} />
         </View>
 
-        <TouchableOpacity 
-          style={[styles.confirmBtn, !selectedCoords && styles.confirmBtnDisabled]} 
-          onPress={handleConfirm}
-          disabled={!selectedCoords}
-          activeOpacity={0.8}
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.confirmBtnText}>Use This Location</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.infoCard}>
+            <Feather name="info" size={20} color={materialTheme.colors.primary} style={styles.infoIcon} />
+            <Text style={styles.helperText}>
+              Enter your farm's GPS coordinates manually. You can copy these from Google Maps or another mapping source.
+            </Text>
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Latitude</Text>
+            <TextInput
+              style={styles.fieldInput}
+              placeholder="e.g., 22.5937"
+              placeholderTextColor={materialTheme.colors.textSecondary}
+              value={latText}
+              onChangeText={(t) => {
+                setLatText(t);
+                if (errorMsg) setErrorMsg(null);
+              }}
+              keyboardType="numeric"
+              autoCorrect={false}
+            />
+            <Text style={styles.fieldHint}>Must be between -90 and 90 degrees.</Text>
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Longitude</Text>
+            <TextInput
+              style={styles.fieldInput}
+              placeholder="e.g., 78.9629"
+              placeholderTextColor={materialTheme.colors.textSecondary}
+              value={lonText}
+              onChangeText={(t) => {
+                setLonText(t);
+                if (errorMsg) setErrorMsg(null);
+              }}
+              keyboardType="numeric"
+              autoCorrect={false}
+            />
+            <Text style={styles.fieldHint}>Must be between -180 and 180 degrees.</Text>
+          </View>
+
+          {errorMsg && (
+            <View style={styles.errorContainer}>
+              <Feather name="alert-triangle" size={16} color={materialTheme.colors.error} style={{ marginRight: 8 }} />
+              <Text style={styles.errorText}>{errorMsg}</Text>
+            </View>
+          )}
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[styles.confirmBtn, isButtonDisabled && styles.confirmBtnDisabled]}
+            onPress={handleConfirm}
+            disabled={isButtonDisabled}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.confirmBtnText}>Use Coordinates</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -151,82 +149,70 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 40,
   },
-  mapContainer: {
-    flex: 1,
-    position: 'relative',
+  content: {
+    padding: materialTheme.spacing.lg,
   },
-  map: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  toggleContainer: {
-    position: 'absolute',
-    top: 16,
-    alignSelf: 'center',
+  infoCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 4,
-    elevation: 4,
-    shadowColor: '#000000',
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    zIndex: 10,
+    backgroundColor: materialTheme.colors.primaryContainer,
+    borderRadius: materialTheme.borderRadius.card,
+    padding: materialTheme.spacing.md,
+    marginBottom: materialTheme.spacing.lg,
+    alignItems: 'flex-start',
   },
-  toggleBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: 'transparent',
+  infoIcon: {
+    marginRight: 10,
+    marginTop: 2,
   },
-  toggleBtnActive: {
-    backgroundColor: materialTheme.colors.primary,
+  helperText: {
+    flex: 1,
+    fontSize: 14,
+    color: materialTheme.colors.primaryDark,
+    lineHeight: 20,
   },
-  toggleBtnText: {
-    fontSize: 13,
+  fieldGroup: {
+    marginBottom: materialTheme.spacing.lg,
+  },
+  fieldLabel: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#666666',
+    color: materialTheme.colors.onSurface,
+    marginBottom: materialTheme.spacing.sm,
   },
-  toggleBtnTextActive: {
-    color: '#FFFFFF',
+  fieldInput: {
+    backgroundColor: materialTheme.colors.surface,
+    borderRadius: materialTheme.borderRadius.input,
+    borderWidth: 1,
+    borderColor: materialTheme.colors.outline,
+    paddingHorizontal: materialTheme.spacing.md,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: materialTheme.colors.onSurface,
+  },
+  fieldHint: {
+    fontSize: 12,
+    color: materialTheme.colors.textSecondary,
+    marginTop: 4,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEE2E2',
+    padding: materialTheme.spacing.md,
+    borderRadius: materialTheme.borderRadius.md,
+    marginTop: materialTheme.spacing.sm,
+  },
+  errorText: {
+    flex: 1,
+    color: materialTheme.colors.error,
+    fontSize: 14,
+    fontWeight: '600',
   },
   footer: {
     padding: 16,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderColor: materialTheme.colors.outline,
-    alignItems: 'center',
-  },
-  helperText: {
-    fontSize: 13,
-    color: '#666666',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  coordsContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 48,
-    marginBottom: 16,
-  },
-  coordsLabel: {
-    fontSize: 11,
-    color: materialTheme.colors.primary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  coordsText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: materialTheme.colors.onSurface,
-    marginTop: 2,
-  },
-  errorPromptText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: materialTheme.colors.error,
   },
   confirmBtn: {
     width: '100%',

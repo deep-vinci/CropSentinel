@@ -354,9 +354,10 @@ export const FarmDetailScreen = ({ navigation, route }) => {
             <View style={styles.diamondPolygon} />
           </View>
           <View style={styles.mapLegendChip}>
-            <Text style={styles.mapLegendChipText}>Satellite View</Text>
+            <Text style={styles.mapLegendChipText}>Satellite imagery preview</Text>
           </View>
         </View>
+
 
         <View style={styles.trendCard}>
           <View style={styles.trendHeader}>

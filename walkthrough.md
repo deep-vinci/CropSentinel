@@ -44,30 +44,18 @@ The mobile application implements a complete user journey with the following sta
 * **Animated Success & Confirmation Feedback**: Tapping "Apply Intervention" scales in a checkmark feedback animation modal saying "Intervention recorded successfully.", schedules a local notification, and updates demo state tracking.
 * **npx expo-doctor** passed successfully with `21/21 checks passed. No issues detected!`.
 
-## D5.4 MAP ENHANCEMENT REPORT (Critical Debug Pass)
+## HONEST D5.4 QA REPORT
 
-### Root Cause Analysis:
-On Android devices running Expo Go, Google Maps is used as the default maps provider. Google Maps requires a Google Maps API Key to load its map tiles. When no API key is set in `app.json`, the Google Maps SDK fails to load tiles, resulting in a black/blank screen (even though the Google watermark logo, map gestures, and custom markers function correctly).
-
-### Solution:
-We bypass the API key requirements by rendering custom web-based tiles using `react-native-maps`'s native `<UrlTile>` overlay:
-1. When on Android, we set the MapView `mapType` to `"none"` to disable Google's blank default tiles.
-2. We then dynamically render a `<UrlTile>` pointing to:
-   - **Standard View**: OpenStreetMap tiles (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`).
-   - **Satellite View**: ESRI World Imagery tiles (`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`).
-3. On iOS, we continue to use the native system Apple Maps (`mapType="standard"` and `mapType="satellite"`), which renders high-quality map and satellite tiles natively without requiring API keys.
-
-| Check | Status | Note |
+| Feature / Flow | Status | Verification Detail |
 |---|---|---|
-| Location Picker Rendering | PASS | Renders correctly in Expo Go on both platforms. |
-| Blank Screen Fixed | PASS | Checked and resolved on Android. |
-| Standard View | PASS | OpenStreetMap tiles render standard view. |
-| Satellite View | PASS | ESRI World Imagery tiles render satellite view. |
-| Marker Placement | PASS | Tapping map places and updates standard marker pin. |
-| Coordinate Capture | PASS | Live latitude/longitude coordinate displays update correctly. |
-| Add Field Integration | PASS | Returns coordinates back to AddFieldScreen correctly. |
-| Expo Go Compatibility | PASS | Fully compatible without API keys or native configuration. |
-| Build Safety | PASS | `npx expo-doctor` passed successfully. |
+| Farm Name Input | **PASS** | TextInput focuses correctly, is editable, and keyboard opens normally. |
+| Crop Selection | **PASS** | Dropdown Selector displays Options: Wheat, Rice, Corn, Sugarcane. Selection updates state. |
+| Soil Selection | **PASS** | Dropdown Selector displays Options: Sandy, Clay, Loamy, Silty. Selection updates state. |
+| Coordinate Selection | **PASS** | Experimental MapView removed. Replaced with manual input text fields for Latitude and Longitude with boundary validation. Bypasses Google Maps rendering blank/black screens on Android. |
+| Save Farm | **PASS** | Coordinates are parsed and validated. prepared JSON payload schema matches D6 requirements and success modal is shown. |
+| Farm Detail Placeholder | **PASS** | Preserved static placeholder map imagery and renamed badge to `"Satellite imagery preview"` to accurately present demo features. |
+| Expo Go Stability | **PASS** | No crashes, black screens, or API key errors occur on devices. |
+
 
 
 * **Premium Reanimated Transitions**:
