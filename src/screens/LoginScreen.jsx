@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import leavesTopRight from '../assets/leaves-top-right.png';
+import onboardingFarm from '../assets/onboarding-farm.png';
 import { useI18n } from '../I18nContext';
 
 export default function LoginScreen({ onLogin }) {
@@ -16,48 +17,44 @@ export default function LoginScreen({ onLogin }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'var(--cs-bg)',
-      display: 'flex', flexDirection: 'column',
-      overflowY: 'auto', overflowX: 'hidden',
-    }}>
-      <img src={leavesTopRight} alt="" style={{
+    <div className="split-auth-container">
+      <img src={leavesTopRight} className="mobile-only" alt="" style={{
         position: 'absolute', top: 0, right: 0, width: 112,
         pointerEvents: 'none', userSelect: 'none', zIndex: 0, opacity: 0.6,
       }} />
 
-      {/* Header */}
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        textAlign: 'center',
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 52px)',
-        paddingBottom: 24, paddingLeft: 24, paddingRight: 24,
-        position: 'relative', zIndex: 10,
-      }}>
-        <svg width="44" height="44" viewBox="0 0 72 72" fill="none" style={{ marginBottom: 12 }}>
-          <path d="M36 62 C36 62,14 46,16 22 C16 8,36 8,36 8" fill="#6B9B58" />
-          <path d="M36 62 C36 62,20 44,30 16 C38 8,54 18,36 62" fill="#3d6b4a" />
-          <line x1="36" y1="62" x2="54" y2="30" stroke="#C9913A" strokeWidth="4.5" strokeLinecap="round"/>
-          {[[54,28],[50,33],[46,38]].map(([cx,cy],i) => (
-            <ellipse key={i} cx={cx} cy={cy} rx="3.5" ry="2.5" transform={`rotate(-30 ${cx} ${cy})`} fill="#C9913A" />
-          ))}
-        </svg>
-        <h2 style={{ fontSize: 24, fontWeight: 900, color: 'var(--cs-text)', margin: 0 }}>
-          Welcome back! 👋
-        </h2>
-        <p style={{ fontSize: 13, color: 'var(--cs-text-dim)', fontWeight: 500, margin: '4px 0 0' }}>
-          Login to continue
-        </p>
-      </div>
+      {/* Left Side: Form & Branding */}
+      <div className="split-auth-brand" style={{ position: 'relative', zIndex: 10, overflowY: 'auto' }}>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          textAlign: 'center',
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 52px)',
+          paddingBottom: 24, paddingLeft: 24, paddingRight: 24,
+        }}>
+          <svg width="44" height="44" viewBox="0 0 72 72" fill="none" style={{ marginBottom: 12 }}>
+            <path d="M36 62 C36 62,14 46,16 22 C16 8,36 8,36 8" fill="#6B9B58" />
+            <path d="M36 62 C36 62,20 44,30 16 C38 8,54 18,36 62" fill="#3d6b4a" />
+            <line x1="36" y1="62" x2="54" y2="30" stroke="#C9913A" strokeWidth="4.5" strokeLinecap="round"/>
+            {[[54,28],[50,33],[46,38]].map(([cx,cy],i) => (
+              <ellipse key={i} cx={cx} cy={cy} rx="3.5" ry="2.5" transform={`rotate(-30 ${cx} ${cy})`} fill="#C9913A" />
+            ))}
+          </svg>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: 'var(--cs-text)', margin: 0 }}>
+            Welcome back! 👋
+          </h2>
+          <p style={{ fontSize: 13, color: 'var(--cs-text-dim)', fontWeight: 500, margin: '4px 0 0' }}>
+            Login to continue
+          </p>
+        </div>
 
-      {/* Form */}
-      <div className="content-max" style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        padding: '0 24px',
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)',
-        gap: 16, position: 'relative', zIndex: 10,
-        width: '100%', margin: '0 auto',
+        {/* Form */}
+        <div className="content-max" style={{
+          width: '100%', maxWidth: 400, margin: '0 auto',
+          display: 'flex', flexDirection: 'column',
+          padding: '0 24px',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 32px)',
+          gap: 16,
+
       }}>
         {/* Email */}
         <div>
@@ -167,6 +164,12 @@ export default function LoginScreen({ onLogin }) {
           New farmer?{' '}
           <span style={{ fontWeight:700, color:'var(--cs-accent)', cursor:'pointer' }}>Create Account</span>
         </p>
+      </div>
+      </div>
+
+      {/* Right Side: Visual */}
+      <div className="split-auth-visual desktop-only">
+        <img src={onboardingFarm} alt="Farm landscape" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center center' }} />
       </div>
     </div>
   );

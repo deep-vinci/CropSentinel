@@ -16,26 +16,32 @@ export default function WelcomeScreen({ onStart }) {
 function LightWelcome({ onStart }) {
   const bgRgb = '248,246,240';
   return (
-    <div style={{ position:'absolute', inset:0, background:'var(--cs-bg)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-      <img src={leavesTopRight} alt="" style={{ position:'absolute', top:0, right:0, width:112, pointerEvents:'none', userSelect:'none', zIndex:10, opacity:0.85 }} />
+    <div className="split-auth-container">
+      <img src={leavesTopRight} className="mobile-only" alt="" style={{ position:'absolute', top:0, right:0, width:112, pointerEvents:'none', userSelect:'none', zIndex:10, opacity:0.85 }} />
 
       {/* Branding */}
-      <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center', paddingTop:'calc(env(safe-area-inset-top,0px) + 48px)', paddingBottom:16, paddingLeft:32, paddingRight:32, position:'relative', zIndex:20 }}>
+      <div className="split-auth-brand" style={{ paddingTop:'calc(env(safe-area-inset-top,0px) + 48px)', paddingBottom:16, paddingLeft:32, paddingRight:32, zIndex:20 }}>
         <CropLogo bgColor="var(--cs-bg)" size={72} style={{ marginBottom:16 }} />
         <h1 style={{ fontSize:34, fontWeight:900, margin:0, lineHeight:1.1, letterSpacing:'-0.5px' }}>
           <span style={{ color:'var(--cs-text)' }}>Crop</span>
           <span style={{ color:'var(--cs-accent)' }}>Sentinel</span>
         </h1>
         <p style={{ fontSize:13, fontWeight:500, color:'var(--cs-text-dim)', margin:'6px 0 0' }}>
-          {/* Using hardcoded here since t() isn't available down in this subcomponent, but that's okay for the brand slogan */}
           AI-Powered Farm Intelligence
         </p>
+
+        {/* Desktop button (hidden on mobile) */}
+        <div className="desktop-only" style={{ marginTop: 40, width: '100%', maxWidth: 300 }}>
+          <GetStartedBtn onStart={onStart} />
+        </div>
       </div>
 
       {/* Hero image */}
-      <div style={{ flex:1, position:'relative', minHeight:0 }}>
+      <div className="split-auth-visual">
         <img src={onboardingFarm} alt="Farm landscape" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'bottom center' }} />
-        <div className="content-max" style={{ position:'absolute', left:0, right:0, bottom:'calc(env(safe-area-inset-bottom,0px) + 32px)', zIndex:20, padding:'0 28px', margin:'0 auto' }}>
+        
+        {/* Mobile button (positioned over image) */}
+        <div className="mobile-only content-max" style={{ position:'absolute', left:0, right:0, bottom:'calc(env(safe-area-inset-bottom,0px) + 32px)', zIndex:20, padding:'0 28px', margin:'0 auto' }}>
           <GetStartedBtn onStart={onStart} />
         </div>
       </div>
@@ -46,52 +52,38 @@ function LightWelcome({ onStart }) {
 /* ── DARK WELCOME (satellite / space design) ─────────────────────────────── */
 function DarkWelcome({ onStart }) {
   return (
-    <div style={{ position:'absolute', inset:0, background:'#0B1A0D', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-
-      {/* Full-bleed satellite background image */}
-      <img
-        src={darkSatelliteBg}
-        alt=""
-        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center bottom', pointerEvents:'none' }}
-      />
-
-      {/* Subtle dark gradient over the whole screen for legibility */}
-      <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(11,26,13,0.15) 40%, rgba(11,26,13,0.80) 68%, rgba(11,26,13,0.97) 84%)' }} />
-
-      {/* Content — stacked at bottom like the reference */}
-      <div className="content-max" style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:10, display:'flex', flexDirection:'column', alignItems:'center', padding:'0 28px', paddingBottom:'calc(env(safe-area-inset-bottom,0px) + 36px)', margin:'0 auto' }}>
-
-        {/* Brand name */}
+    <div className="split-auth-container" style={{ background:'#0B1A0D' }}>
+      {/* Branding */}
+      <div className="split-auth-brand" style={{ paddingTop:'calc(env(safe-area-inset-top,0px) + 48px)', paddingBottom:16, paddingLeft:32, paddingRight:32, zIndex:20 }}>
         <h1 style={{ fontSize:36, fontWeight:900, margin:'0 0 6px', lineHeight:1.1, letterSpacing:'-0.5px', textAlign:'center' }}>
           <span style={{ color:'#FFFFFF' }}>Crop</span>
           <span style={{ color:'#4ADE80' }}>Sentinel</span>
         </h1>
-
-        {/* Tagline */}
         <p style={{ fontSize:14, fontWeight:400, color:'rgba(255,255,255,0.70)', margin:'0 0 28px', textAlign:'center', letterSpacing:'0.1px' }}>
           AI-powered farm intelligence
         </p>
 
-        {/* Get Started button */}
-        <button
-          onClick={onStart}
-          style={{
-            width:'100%', background:'#4ADE80', color:'#0B1A0D',
-            fontWeight:800, fontSize:16, padding:'17px 24px',
-            borderRadius:16, border:'none', cursor:'pointer',
-            display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-            boxShadow:'0 0 32px rgba(74,222,128,0.45), 0 4px 16px rgba(0,0,0,0.4)',
-            letterSpacing:'0.2px', fontFamily:'inherit', marginBottom:18,
-            transition:'opacity 0.2s',
-          }}
-        >
-          Get Started
-        </button>
-
-        {/* Sub-tagline */}
-        <p style={{ fontSize:12, fontWeight:500, color:'rgba(255,255,255,0.40)', margin:0, textAlign:'center', letterSpacing:'0.3px' }}>
+        {/* Desktop button (hidden on mobile) */}
+        <div className="desktop-only" style={{ width: '100%', maxWidth: 300 }}>
+          <GetStartedBtn onStart={onStart} />
+        </div>
+        <p className="desktop-only" style={{ fontSize:12, fontWeight:500, color:'rgba(255,255,255,0.40)', margin:0, textAlign:'center', letterSpacing:'0.3px', marginTop: 16 }}>
           Secure. Smart. Sustainable.
         </p>
+      </div>
+
+      {/* Visual */}
+      <div className="split-auth-visual">
+        <img src={darkSatelliteBg} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', objectPosition:'center bottom', pointerEvents:'none' }} />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(11,26,13,0.15) 40%, rgba(11,26,13,0.80) 68%, rgba(11,26,13,0.97) 84%)' }} />
+
+        {/* Mobile bottom content */}
+        <div className="mobile-only content-max" style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:10, display:'flex', flexDirection:'column', alignItems:'center', padding:'0 28px', paddingBottom:'calc(env(safe-area-inset-bottom,0px) + 36px)', margin:'0 auto' }}>
+          <GetStartedBtn onStart={onStart} />
+          <p style={{ fontSize:12, fontWeight:500, color:'rgba(255,255,255,0.40)', margin:0, textAlign:'center', letterSpacing:'0.3px', marginTop: 16 }}>
+            Secure. Smart. Sustainable.
+          </p>
+        </div>
       </div>
     </div>
   );

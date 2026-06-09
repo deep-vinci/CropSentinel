@@ -160,6 +160,27 @@ body {
   height: 144px;
 }
 
+.split-auth-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  inset: 0;
+  background: var(--cs-bg);
+  overflow: hidden;
+}
+
+.split-auth-brand {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.split-auth-visual {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+
 @media (min-width: 768px) {
   .app-container {
     flex-direction: row-reverse; /* Put nav on left? Wait, row-reverse makes it right. */
@@ -248,5 +269,25 @@ body {
 
   .chart-container {
     height: 350px;
+  }
+
+  .split-auth-container {
+    flex-direction: row;
+  }
+
+  .split-auth-brand {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .split-auth-visual {
+    flex: 1.2;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
   }
 }
