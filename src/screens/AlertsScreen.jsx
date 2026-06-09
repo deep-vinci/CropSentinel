@@ -55,7 +55,7 @@ function AlertDetailModal({ alert, onClose }) {
   const Icon = alert.icon;
   return (
     <div style={{
-      position:'fixed', inset:0, background:'var(--cs-shadow)',
+      position:'fixed', inset:0, background:'rgba(0,0,0,0.5)',
       zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center',
       padding: '20px'
     }} onClick={onClose}>
