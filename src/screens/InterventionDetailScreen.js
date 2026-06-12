@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { materialTheme } from '../theme';
-import { fetchDashboard, getIntervention, submitIntervention } from '../services';
+import { fetchDashboard, getIntervention, submitIntervention, fetchFarms } from '../services';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { scheduleLocalAlert } from '../services/notifications';
@@ -120,11 +120,21 @@ export const InterventionDetailScreen = ({ navigation, route }) => {
     setError(null);
     
     try {
+      const farmIdFromRoute = route.params?.farmId;
+      let resolvedFarmId = farmIdFromRoute;
+
+      if (!isDemoMode && !resolvedFarmId) {
+        const list = await fetchFarms().catch(() => []);
+        if (list && list.length > 0) {
+          resolvedFarmId = list[0].id;
+        }
+      }
+
       const dashboard = await fetchDashboard();
       if (dashboard && dashboard.recommendation) {
         const rec = dashboard.recommendation;
         setDetails({
-          farmId: dashboard.farm?.id || 1,
+          farmId: resolvedFarmId || 3,
           action: rec.action || 'Irrigate within 48 hours',
           description: 'Timely action recommended by CropSentinel AI.',
           irrigation: '35 mm',

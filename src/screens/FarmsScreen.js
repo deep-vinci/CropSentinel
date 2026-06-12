@@ -246,7 +246,7 @@ export const FarmsScreen = ({ navigation }) => {
       `${farm.name}`,
       t.cancel,
       [
-        { text: t.viewDetails, onPress: () => { triggerHapticSelection(); navigation.navigate('FarmDetail', { farm }); } },
+        { text: t.viewDetails, onPress: () => { triggerHapticSelection(); navigation.navigate('FarmDetail', { farmId: Number(farm.id) }); } },
         { text: t.editFarm, onPress: () => { triggerHapticSelection(); navigation.navigate('AddField', { farm }); } },
         {
           text: t.deleteFarm,
@@ -411,7 +411,7 @@ export const FarmsScreen = ({ navigation }) => {
                     style={styles.farmCard}
                     onPress={() => {
                       triggerHapticSelection();
-                      navigation.navigate('FarmDetail', { farm: item });
+                      navigation.navigate('FarmDetail', { farmId: Number(item.id) });
                     }}
                   >
                     <View style={styles.farmCardLeft}>

@@ -347,7 +347,7 @@ export const MyFarmsScreen = ({ navigation }) => {
               ]}
               onPress={() => {
                 triggerHapticSelection();
-                navigation.navigate('FarmDetail', { farm: highestRiskFarm });
+                navigation.navigate('FarmDetail', { farmId: Number(highestRiskFarm.id) });
               }}
               activeOpacity={0.9}
             >
@@ -394,7 +394,7 @@ export const MyFarmsScreen = ({ navigation }) => {
                 style={[styles.highlightBtn, { backgroundColor: getHealthColor(highestRiskFarm.healthScore) }]}
                 onPress={() => {
                   triggerHapticSelection();
-                  navigation.navigate('FarmDetail', { farm: highestRiskFarm });
+                  navigation.navigate('FarmDetail', { farmId: Number(highestRiskFarm.id) });
                 }}
               >
                 <Text style={styles.highlightBtnText}>{t.viewDetails}</Text>

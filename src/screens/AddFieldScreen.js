@@ -181,24 +181,10 @@ export const AddFieldScreen = ({ navigation, route }) => {
     triggerHapticSelection();
     setShowSuccess(false);
     
-    // Create new/updated farm object to pass to detail screen
-    const farmObject = {
-      id: savedFarmIdRef.current || savedFarmId || farmToEdit?.id || 'temp_new_farm',
-      name: fieldName.trim(),
-      cropType: cropType,
-      healthScore: farmToEdit?.healthScore || 85,
-      ndvi: farmToEdit?.ndvi || 0.68,
-      moisture: farmToEdit?.moisture || '45%',
-      riskSeverity: farmToEdit?.riskSeverity || 'low',
-      zoneType: farmToEdit?.zoneType || 'healthy',
-      latitude: (location && Number.isFinite(location.latitude)) ? parseFloat(location.latitude.toFixed(4)) : (farmToEdit?.latitude || 0.0),
-      longitude: (location && Number.isFinite(location.longitude)) ? parseFloat(location.longitude.toFixed(4)) : (farmToEdit?.longitude || 0.0),
-      area: fieldArea || '5.0',
-      soilType: soilType,
-      location: farmToEdit?.location || `${cropType} Zone`,
-    };
+    const exactId = parseInt(savedFarmIdRef.current || savedFarmId || farmToEdit?.id);
+    console.log('[NAV] Opening FarmDetail with farmId:', exactId);
 
-    navigation.replace('FarmDetail', { farm: farmObject });
+    navigation.navigate('FarmDetail', { farmId: exactId });
   };
 
   const handleCloseSuccess = () => {

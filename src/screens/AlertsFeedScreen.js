@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics';
 
 import { materialTheme } from '../theme';
 import { illustrations } from '../assets';
-import { fetchAlerts, fetchDashboard } from '../services';
+import { fetchAlerts, fetchFarms } from '../services';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { useDemoState } from '../config/demoState';
@@ -62,9 +62,9 @@ export const AlertsFeedScreen = ({ navigation }) => {
     setError(null);
     
     try {
-      const [data, dash] = await Promise.all([
+      const [data, farmsList] = await Promise.all([
         fetchAlerts(),
-        fetchDashboard().catch(() => null)
+        fetchFarms().catch(() => [])
       ]);
 
       if (!data) {
@@ -72,8 +72,8 @@ export const AlertsFeedScreen = ({ navigation }) => {
       }
 
       let activeFarmId = 3; // default fallback
-      if (dash && dash.farm) {
-        activeFarmId = dash.farm.id;
+      if (farmsList && farmsList.length > 0) {
+        activeFarmId = farmsList[0].id;
       }
       
       const mapped = (data || []).map(item => {
