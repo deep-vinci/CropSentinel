@@ -218,7 +218,7 @@ export const LocationPickerScreen = ({ navigation, route }) => {
           mapType={Platform.OS === 'android' ? 'none' : 'standard'}
         >
           <UrlTile
-            urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
             maximumZ={19}
             tileSize={256}
             shouldReplaceMapContent={Platform.OS === 'ios'}
