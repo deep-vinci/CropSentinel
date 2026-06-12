@@ -1,5 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  Alert,
+  Animated,
+} from 'react-native';
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -8,6 +17,22 @@ import { materialTheme } from '../theme';
 import { illustrations } from '../assets';
 import { useDemoState } from '../config/demoState';
 import { translations } from '../constants/translations';
+import { login } from '../services';
+
+// ─── Validation Regexes ────────────────────────────────────────────────────────
+const PHONE_REGEX = /^[6-9]\d{9}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Validates input and returns an object describing what was found.
+ * @returns {{ valid: boolean, type: 'phone' | 'email' | null }}
+ */
+const validateInput = (raw) => {
+  const value = raw.trim();
+  if (PHONE_REGEX.test(value)) return { valid: true, type: 'phone' };
+  if (EMAIL_REGEX.test(value))  return { valid: true, type: 'email' };
+  return { valid: false, type: null };
+};
 
 const triggerHapticSelection = async () => {
   try {
@@ -16,12 +41,23 @@ const triggerHapticSelection = async () => {
 };
 
 export const LoginScreen = ({ navigation }) => {
-  const { language } = useDemoState();
+  const { language, setAuthToken, setProfileEmail, setProfileName } = useDemoState();
   const t = translations[language] || translations.en;
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [inputValue, setInputValue]     = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading]           = useState(false);
+
+  // Real-time validation state
+  const [touched, setTouched]     = useState(false);
+  const validation                = validateInput(inputValue);
+  const showError = touched && inputValue.length > 0 && !validation.valid;
+
+  // ─── Handlers ────────────────────────────────────────────────────────────────
+  const handleInputChange = useCallback((text) => {
+    setInputValue(text);
+    if (!touched && text.length > 0) setTouched(true);
+  }, [touched]);
 
   const handleForgotPress = () => {
     triggerHapticSelection();
@@ -41,11 +77,50 @@ export const LoginScreen = ({ navigation }) => {
     );
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     triggerHapticSelection();
-    navigation.replace('MyFarms');
+
+    // Always re-validate on press — catches the case where user taps without typing
+    const result = validateInput(inputValue);
+    setTouched(true);
+
+    if (!result.valid) {
+      Alert.alert(
+        'Invalid Input',
+        'Please enter a valid phone number or email address.'
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Build the correct payload based on input type
+      const credential =
+        result.type === 'phone'
+          ? { phone_number: inputValue.trim() }
+          : { email: inputValue.trim() };
+
+      const response = await login(credential);
+      if (response && response.access_token) {
+        setAuthToken(response.access_token);
+        if (response.user) {
+          setProfileEmail(response.user.phone_number || inputValue.trim());
+          setProfileName(`Farmer ${response.user.id}`);
+        }
+      }
+      navigation.replace('MyFarms');
+    } catch (error) {
+      console.warn('Login failed:', error);
+      Alert.alert('Login Failed', error.message || 'An error occurred during authentication.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Derive button state
+  const isButtonDisabled = loading || !validation.valid;
+
+  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <Image source={illustrations.leavesTopRight} style={styles.decorativeLeaf} resizeMode="contain" />
@@ -57,70 +132,107 @@ export const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.form}>
+          {/* ── Phone / Email Input ─────────────────────────────────────────── */}
           <View style={styles.inputGroup}>
-            <View style={styles.inputRow}>
-              <Feather name="mail" size={18} color={materialTheme.colors.textSecondary} style={styles.inputIcon} />
+            <View style={[
+              styles.inputRow,
+              showError && styles.inputRowError,
+              touched && validation.valid && styles.inputRowValid,
+            ]}>
+              <Feather
+                name={validation.type === 'email' ? 'mail' : 'smartphone'}
+                size={18}
+                color={
+                  showError
+                    ? materialTheme.colors.error
+                    : touched && validation.valid
+                    ? materialTheme.colors.success
+                    : materialTheme.colors.textSecondary
+                }
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
-                placeholder={t.email}
+                placeholder="Phone number or email"
                 placeholderTextColor={materialTheme.colors.textSecondary}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
+                value={inputValue}
+                onChangeText={handleInputChange}
+                keyboardType="default"
                 autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="off"
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
               />
+              {touched && inputValue.length > 0 && (
+                <Feather
+                  name={validation.valid ? 'check-circle' : 'alert-circle'}
+                  size={16}
+                  color={
+                    validation.valid
+                      ? materialTheme.colors.success
+                      : materialTheme.colors.error
+                  }
+                  style={styles.validationIcon}
+                />
+              )}
             </View>
-            <Text style={styles.inputHint}>example@email.com</Text>
+
+            {/* Material 3 helper text — only shown when there is an error */}
+            {showError ? (
+              <View style={styles.helperRow}>
+                <Feather name="info" size={12} color={materialTheme.colors.error} style={{ marginRight: 4 }} />
+                <Text style={styles.helperTextError}>
+                  Enter a valid 10-digit phone number or email address.
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.inputHint}>
+                {validation.type === 'email'
+                  ? '✓ Email detected'
+                  : validation.type === 'phone'
+                  ? '✓ Phone number detected'
+                  : '9876543210  or  user@example.com'}
+              </Text>
+            )}
           </View>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.inputRow}>
-              <Feather name="lock" size={18} color={materialTheme.colors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={t.password}
-                placeholderTextColor={materialTheme.colors.textSecondary}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity 
-                onPress={() => {
-                  triggerHapticSelection();
-                  setShowPassword(!showPassword);
-                }} 
-                style={styles.eyeBtn}
-              >
-                <Feather name={showPassword ? 'eye' : 'eye-off'} size={18} color={materialTheme.colors.textSecondary} />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.inputHint}>••••••••••••</Text>
-          </View>
-
+          {/* ── Forgot / helper link ────────────────────────────────────────── */}
           <TouchableOpacity style={styles.forgotBtn} onPress={handleForgotPress}>
             <Text style={styles.forgotText}>{t.forgotPassword}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-            <Text style={styles.loginText}>{t.login}</Text>
+          {/* ── Login Button ────────────────────────────────────────────────── */}
+          <TouchableOpacity
+            style={[
+              styles.loginBtn,
+              (loading || !validation.valid) && styles.loginBtnDisabled,
+            ]}
+            onPress={handleLogin}
+            disabled={isButtonDisabled}
+            activeOpacity={isButtonDisabled ? 1 : 0.85}
+          >
+            <Text style={[styles.loginText, isButtonDisabled && styles.loginTextDisabled]}>
+              {loading ? 'Connecting…' : t.login}
+            </Text>
           </TouchableOpacity>
 
           <Text style={styles.orText}>{t.orContinueWith}</Text>
 
           <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialBtn} onPress={() => handleSocialPress("Google")}>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => handleSocialPress('Google')}>
               <Text style={styles.socialText}>G</Text>
               <Text style={styles.socialLabel}>Google</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialBtn} onPress={() => handleSocialPress("Apple")}>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => handleSocialPress('Apple')}>
               <FontAwesome name="apple" size={16} color={materialTheme.colors.onSurface} />
               <Text style={styles.socialLabel}>Apple</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={styles.signupRow} 
+        <TouchableOpacity
+          style={styles.signupRow}
           onPress={() => {
             triggerHapticSelection();
             navigation.navigate('Onboarding');
@@ -134,6 +246,7 @@ export const LoginScreen = ({ navigation }) => {
   );
 };
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -185,22 +298,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: materialTheme.colors.surfaceVariant,
     borderRadius: materialTheme.borderRadius.input,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: materialTheme.colors.outline,
     paddingHorizontal: materialTheme.spacing.md,
     height: 52,
   },
+  inputRowError: {
+    borderColor: materialTheme.colors.error,
+    backgroundColor: '#FFF5F5',
+  },
+  inputRowValid: {
+    borderColor: materialTheme.colors.success,
+  },
   inputIcon: {
     marginRight: materialTheme.spacing.sm,
+  },
+  validationIcon: {
+    marginLeft: materialTheme.spacing.sm,
   },
   input: {
     flex: 1,
     fontSize: 15,
     color: materialTheme.colors.onSurface,
   },
-  eyeBtn: {
-    padding: materialTheme.spacing.xs,
+  // M3 helper text — error state
+  helperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    marginLeft: 4,
   },
+  helperTextError: {
+    fontSize: 12,
+    color: materialTheme.colors.error,
+    flex: 1,
+  },
+  // Normal hint below input
   inputHint: {
     fontSize: 12,
     color: materialTheme.colors.textSecondary,
@@ -223,10 +356,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: materialTheme.spacing.md,
   },
+  loginBtnDisabled: {
+    opacity: 0.45,
+  },
   loginText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  loginTextDisabled: {
+    color: 'rgba(255,255,255,0.75)',
   },
   orText: {
     textAlign: 'center',

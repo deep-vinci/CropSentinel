@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { materialTheme } from '../theme';
 import { useDemoState } from '../config/demoState';
 import { translations } from '../constants/translations';
+import { createFarm, updateFarm } from '../services';
 
 const triggerHapticSelection = async () => {
   try {
@@ -80,6 +81,9 @@ export const AddFieldScreen = ({ navigation, route }) => {
   const [soilType, setSoilType] = useState('');
   const [location, setLocation] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [savedFarmId, setSavedFarmId] = useState(null);
+  const savedFarmIdRef = useRef(null);
 
   // Animated values for custom modal
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -123,7 +127,7 @@ export const AddFieldScreen = ({ navigation, route }) => {
     }
   }, [showSuccess]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!fieldName.trim()) {
       Alert.alert(t.validationError, t.enterFarmName);
       return;
@@ -144,36 +148,43 @@ export const AddFieldScreen = ({ navigation, route }) => {
     const payload = {
       farm_name: fieldName.trim(),
       crop_type: cropType,
-      latitude: parseFloat(location.latitude.toFixed(4)),
-      longitude: parseFloat(location.longitude.toFixed(4))
+      latitude: (location && Number.isFinite(location.latitude)) ? parseFloat(location.latitude.toFixed(4)) : 0.0,
+      longitude: (location && Number.isFinite(location.longitude)) ? parseFloat(location.longitude.toFixed(4)) : 0.0
     };
 
     console.log("D6 Backend Payload:", JSON.stringify(payload, null, 2));
-    setShowSuccess(true);
+    setLoading(true);
+
+    try {
+      let res;
+      if (isEditMode) {
+        res = await updateFarm(farmToEdit.id, payload);
+        setSavedFarmId(farmToEdit.id);
+        savedFarmIdRef.current = farmToEdit.id;
+      } else {
+        res = await createFarm(payload);
+        if (res && res.farm_id) {
+          setSavedFarmId(String(res.farm_id));
+          savedFarmIdRef.current = String(res.farm_id);
+        }
+      }
+      setShowSuccess(true);
+    } catch (err) {
+      console.warn("Failed to save farm:", err);
+      Alert.alert("Error Saving Farm", err.message || "An error occurred while communicating with the backend.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleViewDetails = () => {
     triggerHapticSelection();
     setShowSuccess(false);
     
-    // Create new/updated farm object to pass to detail screen
-    const farmObject = {
-      id: farmToEdit?.id || 'temp_new_farm',
-      name: fieldName.trim(),
-      cropType: cropType,
-      healthScore: farmToEdit?.healthScore || 85,
-      ndvi: farmToEdit?.ndvi || 0.68,
-      moisture: farmToEdit?.moisture || '45%',
-      riskSeverity: farmToEdit?.riskSeverity || 'low',
-      zoneType: farmToEdit?.zoneType || 'healthy',
-      latitude: parseFloat(location.latitude.toFixed(4)),
-      longitude: parseFloat(location.longitude.toFixed(4)),
-      area: fieldArea || '5.0',
-      soilType: soilType,
-      location: farmToEdit?.location || `${cropType} Zone`,
-    };
+    const exactId = parseInt(savedFarmIdRef.current || savedFarmId || farmToEdit?.id);
+    console.log('[NAV] Opening FarmDetail with farmId:', exactId);
 
-    navigation.replace('FarmDetail', { farm: farmObject });
+    navigation.navigate('FarmDetail', { farmId: exactId });
   };
 
   const handleCloseSuccess = () => {
@@ -261,7 +272,7 @@ export const AddFieldScreen = ({ navigation, route }) => {
             <View style={styles.fieldSelectLeft}>
               <Feather name="map-pin" size={16} color={materialTheme.colors.textSecondary} style={{ marginRight: 6 }} />
               <Text style={[styles.fieldSelectText, location && { color: materialTheme.colors.onSurface }]}>
-                {location 
+                {(location && Number.isFinite(location.latitude) && Number.isFinite(location.longitude)) 
                   ? `Lat: ${location.latitude.toFixed(4)}, Lon: ${location.longitude.toFixed(4)}` 
                   : t.chooseLocation}
               </Text>
@@ -271,14 +282,15 @@ export const AddFieldScreen = ({ navigation, route }) => {
         </View>
 
         <TouchableOpacity 
-          style={styles.saveBtn} 
+          style={[styles.saveBtn, loading && { opacity: 0.7 }]} 
           onPress={() => {
             triggerHapticSelection();
             handleSave();
           }} 
+          disabled={loading}
           activeOpacity={0.8}
         >
-          <Text style={styles.saveBtnText}>{isEditMode ? t.updateFarm : t.saveField}</Text>
+          <Text style={styles.saveBtnText}>{loading ? "Saving..." : (isEditMode ? t.updateFarm : t.saveField)}</Text>
         </TouchableOpacity>
       </ScrollView>
 

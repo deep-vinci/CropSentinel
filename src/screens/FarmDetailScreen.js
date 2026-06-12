@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 
 import { materialTheme } from '../theme';
 import { crops } from '../assets';
-import { fetchDashboard, getNdviHistory, getMarketHistory } from '../services';
+import { getNdviHistory, getMarketHistory, getFarmHistory, postAnalyze, fetchFarms } from '../services';
 import { LoadingState } from '../components/LoadingState';
 import { useDemoState } from '../config/demoState';
 import { DemoBanner } from '../components/DemoBanner';
@@ -163,16 +163,190 @@ export const FarmDetailScreen = ({ navigation, route }) => {
   const [marketData, setMarketData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [satelliteAnalysis, setSatelliteAnalysis] = useState(null);
+
+  const farmId = route.params?.farmId;
+  const [farmInfo, setFarmInfo] = useState(null);
+
+  useEffect(() => {
+    if (farmId) {
+      console.log('[NAV] Opening FarmDetail with farmId:', farmId);
+    }
+  }, [farmId]);
 
   const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [dash, ndviRes, marketRes] = await Promise.all([
-        fetchDashboard(),
-        getNdviHistory(),
-        getMarketHistory(),
-      ]);
+      let dash = null;
+      let ndviRes = null;
+      let marketRes = null;
+
+      if (isDemoMode) {
+        // Fallback demo info if in demo mode
+        const demoFarms = [
+          { id: 1, name: 'Punjab Wheat Farm', cropType: 'Wheat', latitude: 30.9010, longitude: 75.8573 },
+          { id: 2, name: 'Kaveri Delta Rice Farm', cropType: 'Rice', latitude: 10.9102, longitude: 79.3629 },
+          { id: 3, name: 'Marathwada Sugarcane Farm', cropType: 'Sugarcane', latitude: 19.8762, longitude: 75.3433 },
+        ];
+        const selectedDemo = demoFarms.find(f => String(f.id) === String(farmId)) || demoFarms[0];
+        setFarmInfo(selectedDemo);
+
+        const [ndviHistRes, mktHistRes] = await Promise.all([
+          getNdviHistory(),
+          getMarketHistory(),
+        ]);
+
+        let healthScoreVal = 86;
+        let ndviVal = 0.74;
+        let soilMoistureVal = 42;
+        let weatherRiskVal = 0.15;
+        let statusVal = 'Optimal moisture - continue normal irrigation.';
+        
+        if (selectedDemo.id === 1 || selectedDemo.id === '1') {
+          healthScoreVal = 86;
+          ndviVal = 0.74;
+          soilMoistureVal = 42;
+          weatherRiskVal = 0.15;
+          statusVal = 'Optimal moisture - continue normal irrigation.';
+        } else if (selectedDemo.id === 2 || selectedDemo.id === '2') {
+          healthScoreVal = 63;
+          ndviVal = 0.48;
+          soilMoistureVal = 28;
+          weatherRiskVal = 0.35;
+          statusVal = 'Increase irrigation by 20% over next 5 days';
+        } else if (selectedDemo.id === 3 || selectedDemo.id === '3') {
+          healthScoreVal = isDroughtSimulated ? 41 : 78;
+          ndviVal = isDroughtSimulated ? 0.22 : 0.65;
+          soilMoistureVal = isDroughtSimulated ? 11 : 48;
+          weatherRiskVal = isDroughtSimulated ? 0.85 : 0.12;
+          statusVal = isDroughtSimulated ? 'Increase irrigation within 48 hours.' : 'Continue standard irrigation';
+        }
+
+        dash = {
+          farm: {
+            id: selectedDemo.id,
+            name: selectedDemo.name,
+            crop_type: selectedDemo.cropType,
+            latitude: selectedDemo.latitude,
+            longitude: selectedDemo.longitude,
+          },
+          farm_health_score: healthScoreVal,
+          ndvi: ndviVal,
+          weather_risk: weatherRiskVal,
+          soil_moisture: soilMoistureVal,
+          market_risk: 0.35,
+          last_updated: new Date().toISOString(),
+          status: statusVal,
+          recommendation: {
+            action: statusVal,
+            estimated_cost: selectedDemo.id === 3 && isDroughtSimulated ? 1200 : 0,
+            yield_loss_risk: selectedDemo.id === 3 && isDroughtSimulated ? 45000 : 0,
+            confidence: selectedDemo.id === 3 && isDroughtSimulated ? 91 : 95
+          }
+        };
+
+        let vegStatus = 'Optimal / Healthy';
+        if (ndviVal < 0.35) {
+          vegStatus = 'Stressed (Action Required)';
+        } else if (ndviVal < 0.55) {
+          vegStatus = 'Fair / Moderate';
+        }
+
+        setSatelliteAnalysis({
+          ndvi: ndviVal,
+          vegetationStatus: vegStatus,
+          riskLevel: weatherRiskVal > 0.6 ? 'HIGH' : weatherRiskVal > 0.3 ? 'MEDIUM' : 'LOW',
+          recommendation: statusVal
+        });
+
+        ndviRes = ndviHistRes;
+        marketRes = mktHistRes;
+      } else {
+        if (!farmId) {
+          throw new Error('No farmId provided to FarmDetailScreen');
+        }
+        
+        // Fetch the farms to get coordinates
+        const farmsList = await fetchFarms();
+        const matchingFarm = (farmsList || []).find(f => String(f.id) === String(farmId));
+        if (!matchingFarm) {
+          throw new Error(`Farm with ID ${farmId} not found`);
+        }
+
+        const lat = parseFloat(matchingFarm.latitude || 19.8762);
+        const lon = parseFloat(matchingFarm.longitude || 75.3433);
+        const farmIdNum = parseInt(farmId);
+
+        setFarmInfo({
+          id: matchingFarm.id,
+          name: matchingFarm.farm_name || `Farm ${matchingFarm.id}`,
+          cropType: matchingFarm.cropType || 'Wheat',
+          latitude: lat,
+          longitude: lon,
+        });
+
+        console.log('[ANALYZE] Sending farmId:', farmIdNum);
+        console.log('[HISTORY] Sending farmId:', farmIdNum);
+
+        const [analyzeRes, histRes, mktRes] = await Promise.all([
+          postAnalyze({ latitude: lat, longitude: lon, farm_id: farmIdNum }),
+          getFarmHistory(farmIdNum),
+          getMarketHistory()
+        ]);
+
+        if (analyzeRes) {
+          dash = {
+            farm: {
+              id: matchingFarm.id,
+              name: matchingFarm.farm_name,
+              crop_type: matchingFarm.cropType || 'Wheat',
+              latitude: lat,
+              longitude: lon,
+            },
+            farm_health_score: 100 - (analyzeRes.risk?.risk_score ?? 25),
+            ndvi: analyzeRes.satellite?.ndvi ?? 0.65,
+            weather_risk: (analyzeRes.risk?.risk_score ?? 25) / 100,
+            soil_moisture: analyzeRes.satellite?.soil_moisture ?? 35,
+            market_risk: 0.35,
+            last_updated: new Date().toISOString(),
+            status: analyzeRes.risk?.recommendation || 'Crop health stable.',
+            recommendation: {
+              action: analyzeRes.risk?.recommendation || 'No action required.',
+              estimated_cost: 450,
+              yield_loss_risk: 12000,
+              confidence: 88
+            }
+          };
+
+          const ndvi = analyzeRes.satellite?.ndvi ?? 0.65;
+          let status = 'Optimal / Healthy';
+          if (ndvi < 0.35) {
+            status = 'Stressed (Action Required)';
+          } else if (ndvi < 0.55) {
+            status = 'Fair / Moderate';
+          }
+
+          setSatelliteAnalysis({
+            ndvi: ndvi,
+            vegetationStatus: status,
+            riskLevel: (analyzeRes.risk?.risk_level || 'low').toUpperCase(),
+            recommendation: analyzeRes.risk?.recommendation || 'Vegetation status is stable. Continue regular monitoring.'
+          });
+        }
+
+        if (histRes && histRes.history) {
+          const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          ndviRes = {
+            trend: histRes.history.slice(0, 7).reverse().map((item, idx) => ({
+              day: days[idx % days.length],
+              value: item.ndvi
+            }))
+          };
+        }
+
+        marketRes = mktRes;
+      }
       
       if (dash) {
         setDashboardData(dash);
@@ -193,43 +367,32 @@ export const FarmDetailScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     loadData();
-  }, [isDemoMode, isDroughtSimulated]);
-
-  const farmFromRoute = route.params?.farm || {
-    id: 1,
-    name: 'North Field',
-    cropType: 'Wheat',
-    healthScore: 72,
-    ndvi: 0.61,
-    moisture: 'Low',
-    droughtRisk: 'High',
-    riskSeverity: 'high',
-  };
+  }, [farmId, isDemoMode, isDroughtSimulated]);
 
   const farmData = dashboardData ? {
-    id: dashboardData.farm?.id || farmFromRoute.id,
-    name: dashboardData.farm?.name || farmFromRoute.name,
-    cropType: dashboardData.farm?.crop_type || farmFromRoute.cropType,
-    healthScore: dashboardData.farm_health_score ?? farmFromRoute.healthScore,
-    ndvi: dashboardData.ndvi ?? farmFromRoute.ndvi,
-    moisture: dashboardData.soil_moisture !== undefined ? `${dashboardData.soil_moisture}%` : farmFromRoute.moisture,
-    weatherRisk: dashboardData.weather_risk !== undefined ? `${Math.round(dashboardData.weather_risk * 100)}%` : farmFromRoute.droughtRisk,
+    id: dashboardData.farm?.id || farmInfo?.id || farmId,
+    name: dashboardData.farm?.name || farmInfo?.name || 'Farm',
+    cropType: dashboardData.farm?.crop_type || farmInfo?.cropType || 'Wheat',
+    healthScore: dashboardData.farm_health_score ?? 75,
+    ndvi: dashboardData.ndvi ?? 0.60,
+    moisture: dashboardData.soil_moisture !== undefined ? `${dashboardData.soil_moisture}%` : '40%',
+    weatherRisk: dashboardData.weather_risk !== undefined ? `${Math.round(dashboardData.weather_risk * 100)}%` : '20%',
     marketRisk: dashboardData.market_risk !== undefined ? `${Math.round(dashboardData.market_risk * 100)}%` : '40%',
     lastUpdated: dashboardData.last_updated ? new Date(dashboardData.last_updated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '2 hrs ago',
     riskSeverity: (dashboardData.weather_risk ?? 0.65) > 0.6 ? 'high' : 'low',
     zoneType: (dashboardData.weather_risk ?? 0.65) > 0.6 ? 'drought' : 'healthy',
   } : {
-    id: farmFromRoute.id,
-    name: farmFromRoute.name,
-    cropType: farmFromRoute.cropType,
-    healthScore: farmFromRoute.healthScore,
-    ndvi: farmFromRoute.ndvi,
-    moisture: farmFromRoute.moisture,
-    weatherRisk: farmFromRoute.droughtRisk || 'High',
+    id: farmInfo?.id || farmId,
+    name: farmInfo?.name || 'Farm',
+    cropType: farmInfo?.cropType || 'Wheat',
+    healthScore: 75,
+    ndvi: 0.60,
+    moisture: '40%',
+    weatherRisk: '20%',
     marketRisk: '40%',
     lastUpdated: '2 hrs ago',
-    riskSeverity: farmFromRoute.riskSeverity || 'high',
-    zoneType: farmFromRoute.zoneType || 'drought',
+    riskSeverity: 'low',
+    zoneType: 'healthy',
   };
 
   const zoneType = farmData.zoneType;
@@ -355,36 +518,55 @@ export const FarmDetailScreen = ({ navigation, route }) => {
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>{t.avgNDVI}</Text>
+            <Text style={styles.statLabel}>NDVI</Text>
             <Text style={styles.statValue}>{farmData.ndvi}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>{t.avgMoisture}</Text>
+            <Text style={styles.statLabel}>Moisture</Text>
             <Text style={styles.statValue}>{farmData.moisture}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>{t.weatherRisk}</Text>
+            <Text style={styles.statLabel}>Weather Risk</Text>
             <Text style={styles.statValue}>{farmData.weatherRisk}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>{t.marketRisk}</Text>
+            <Text style={styles.statLabel}>Market Risk</Text>
             <Text style={styles.statValue}>{farmData.marketRisk}</Text>
           </View>
         </View>
 
-        <View style={styles.mapCard}>
-          <Image
-            source={require('../assets/satellitefarm.png')}
-            style={styles.mapImage}
-            resizeMode="cover"
-          />
-          <View style={styles.polygonOverlayContainer}>
-            <View style={styles.diamondPolygon} />
+        {satelliteAnalysis && (
+          <View style={styles.satelliteCard}>
+            <View style={styles.satelliteHeader}>
+              <View style={styles.satelliteTitleRow}>
+                <Feather name="globe" size={18} color={materialTheme.colors.primary} style={{ marginRight: 8 }} />
+                <Text style={styles.satelliteTitle}>Satellite Analysis Summary</Text>
+              </View>
+              <View style={[styles.riskChip, styles[`riskChip_${(satelliteAnalysis.riskLevel || 'low').toLowerCase()}`]]}>
+                <Text style={[styles.riskChipText, styles[`riskChipText_${(satelliteAnalysis.riskLevel || 'low').toLowerCase()}`]]}>
+                  {satelliteAnalysis.riskLevel} RISK
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.satelliteStatsContainer}>
+              <View style={styles.satelliteStatBox}>
+                <Text style={styles.satelliteStatLabel}>NDVI Score</Text>
+                <Text style={styles.satelliteStatVal}>{Number(satelliteAnalysis.ndvi).toFixed(2)}</Text>
+              </View>
+              <View style={styles.satelliteStatDivider} />
+              <View style={styles.satelliteStatBox}>
+                <Text style={styles.satelliteStatLabel}>Vegetation Status</Text>
+                <Text style={styles.satelliteStatVal}>{satelliteAnalysis.vegetationStatus}</Text>
+              </View>
+            </View>
+
+            <View style={styles.satelliteRecBox}>
+              <Text style={styles.satelliteRecLabel}>AI Recommendation</Text>
+              <Text style={styles.satelliteRecContent}>{satelliteAnalysis.recommendation}</Text>
+            </View>
           </View>
-          <View style={styles.mapLegendChip}>
-            <Text style={styles.mapLegendChipText}>Satellite imagery preview</Text>
-          </View>
-        </View>
+        )}
 
         <View style={styles.trendCard}>
           <View style={styles.trendHeader}>
@@ -397,7 +579,7 @@ export const FarmDetailScreen = ({ navigation, route }) => {
               labels={ndviData.map(d => d.day)}
               color={materialTheme.colors.primary}
               fallbackText="No NDVI trend data available"
-              formatValue={(v) => v.toFixed(2)}
+              formatValue={(v) => Number.isFinite(v) ? v.toFixed(2) : '0.00'}
             />
           </View>
         </View>
@@ -415,7 +597,7 @@ export const FarmDetailScreen = ({ navigation, route }) => {
               labels={marketData.map(d => d.day)}
               color={materialTheme.colors.tertiary}
               fallbackText="No mandi price data available"
-              formatValue={(v) => `₹${(v/1000).toFixed(1)}k`}
+              formatValue={(v) => Number.isFinite(v) ? `₹${(v/1000).toFixed(1)}k` : '₹0.0k'}
             />
           </View>
         </View>
@@ -599,47 +781,108 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: materialTheme.colors.onSurface,
   },
-  mapCard: {
+  satelliteCard: {
     backgroundColor: materialTheme.colors.surface,
-    borderRadius: 24,
-    height: 200,
-    width: '100%',
-    overflow: 'hidden',
+    borderRadius: materialTheme.borderRadius.card,
+    padding: materialTheme.spacing.md,
     marginBottom: materialTheme.spacing.md,
     borderWidth: 1,
     borderColor: materialTheme.colors.outline,
-    position: 'relative',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  mapImage: {
-    width: '100%',
-    height: '100%',
-  },
-  polygonOverlayContainer: {
-    ...StyleSheet.absoluteFillObject,
+  satelliteHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: materialTheme.spacing.md,
   },
-  diamondPolygon: {
-    width: 100,
-    height: 100,
-    borderWidth: 3,
-    borderColor: '#00FF00',
-    backgroundColor: 'rgba(0, 255, 0, 0.2)',
-    transform: [{ rotate: '45deg' }],
+  satelliteTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  mapLegendChip: {
-    position: 'absolute',
-    top: materialTheme.spacing.sm,
-    right: materialTheme.spacing.sm,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: materialTheme.spacing.sm,
-    paddingVertical: 6,
-    borderRadius: materialTheme.borderRadius.sm,
+  satelliteTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: materialTheme.colors.onSurface,
   },
-  mapLegendChipText: {
-    color: '#FFFFFF',
+  riskChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  riskChip_low: {
+    backgroundColor: '#DCFCE7',
+    borderColor: '#86EFAC',
+  },
+  riskChip_medium: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#FDE68A',
+  },
+  riskChip_high: {
+    backgroundColor: '#FEE2E2',
+    borderColor: '#FCA5A5',
+  },
+  riskChipText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  riskChipText_low: {
+    color: '#15803D',
+  },
+  riskChipText_medium: {
+    color: '#B45309',
+  },
+  riskChipText_high: {
+    color: '#B91C1C',
+  },
+  satelliteStatsContainer: {
+    flexDirection: 'row',
+    backgroundColor: materialTheme.colors.surfaceVariant,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: materialTheme.spacing.md,
+    alignItems: 'center',
+  },
+  satelliteStatBox: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  satelliteStatLabel: {
+    fontSize: 10,
+    color: materialTheme.colors.textSecondary,
+    marginBottom: 2,
+  },
+  satelliteStatVal: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: materialTheme.colors.onSurface,
+  },
+  satelliteStatDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: materialTheme.colors.outline,
+  },
+  satelliteRecBox: {
+    borderLeftWidth: 3,
+    borderLeftColor: materialTheme.colors.primary,
+    paddingLeft: 10,
+    marginVertical: 2,
+  },
+  satelliteRecLabel: {
     fontSize: 11,
     fontWeight: '600',
+    color: materialTheme.colors.textSecondary,
+    marginBottom: 2,
+  },
+  satelliteRecContent: {
+    fontSize: 13,
+    color: materialTheme.colors.onSurface,
+    lineHeight: 18,
   },
   trendCard: {
     backgroundColor: materialTheme.colors.surface,

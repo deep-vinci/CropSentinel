@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 
 import { materialTheme } from '../theme';
 import { crops } from '../assets';
-import { fetchDashboard, fetchAgentStatus, fetchAlerts } from '../services';
+import { fetchFarms, getFarmHistory, fetchAgentStatus, fetchAlerts } from '../services';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { useDemoState } from '../config/demoState';
@@ -80,8 +80,8 @@ export const MyFarmsScreen = ({ navigation }) => {
     setError(null);
 
     try {
-      const [dashData, agentData, alertsData] = await Promise.all([
-        fetchDashboard(),
+      const [farmsList, agentData, alertsData] = await Promise.all([
+        isDemoMode ? Promise.resolve([]) : fetchFarms(),
         fetchAgentStatus(),
         fetchAlerts(),
       ]);
@@ -156,49 +156,70 @@ export const MyFarmsScreen = ({ navigation }) => {
         ];
         setFarms(demoFarmsList);
       } else {
-        // Real mode: Parse dashboard response
-        if (dashData) {
-          if (dashData.farm) {
-            const singleFarm = {
-              id: String(dashData.farm.id || 1),
-              name: dashData.farm.name || 'Marathwada Sugarcane Farm',
-              cropType: dashData.farm.crop_type || 'sugarcane',
-              healthScore: dashData.farm_health_score ?? 72,
-              ndvi: dashData.ndvi ?? 0.21,
-              moisture: `${dashData.soil_moisture ?? 18}%`,
-              riskSeverity: (dashData.weather_risk ?? 0.65) > 0.6 ? 'high' : (dashData.weather_risk ?? 0.65) > 0.3 ? 'medium' : 'low',
-              zoneType: (dashData.weather_risk ?? 0.65) > 0.6 ? 'drought' : 'healthy',
-              location: dashData.farm.location || 'Maharashtra, India',
-              recommendation: {
-                action: dashData.recommendation?.action || 'Irrigate within 48 hours',
-                estimated_cost: dashData.recommendation?.estimated_cost ?? 1200,
-                yield_loss_risk: dashData.recommendation?.yield_loss_risk ?? 45000,
-                confidence: dashData.recommendation?.confidence ?? 91,
+        // Real mode: Parse farmsList and fetch history dynamically
+        const mappedFarms = await Promise.all(
+          (farmsList || []).map(async (farm) => {
+            try {
+              const histRes = await getFarmHistory(farm.id);
+              if (histRes && histRes.history && histRes.history.length > 0) {
+                const latest = histRes.history[0];
+                const riskScore = latest.risk_score ?? 20;
+                const healthScore = Math.max(0, Math.min(100, 100 - riskScore));
+                const ndvi = latest.ndvi ?? 0.65;
+                const riskLevel = (latest.risk_level || 'low').toLowerCase();
+
+                // Derive a dynamic soil moisture percentage
+                let moistureVal = '35%';
+                if (riskLevel === 'high' || riskLevel === 'drought') {
+                  moistureVal = '12%';
+                } else if (riskLevel === 'medium' || riskLevel === 'moderate') {
+                  moistureVal = '25%';
+                } else {
+                  moistureVal = `${Math.round(ndvi * 60)}%`;
+                }
+
+                return {
+                  id: String(farm.id),
+                  name: farm.farm_name,
+                  cropType: farm.cropType || farm.crop_type || 'Wheat',
+                  healthScore: healthScore,
+                  ndvi: ndvi,
+                  moisture: moistureVal,
+                  riskSeverity: riskLevel,
+                  zoneType: riskLevel === 'drought' || riskLevel === 'high' ? 'drought' : riskLevel === 'medium' || riskLevel === 'moderate' ? 'moderate' : 'healthy',
+                  location: farm.location || `${Number(farm.latitude).toFixed(3)}°, ${Number(farm.longitude).toFixed(3)}°`,
+                  recommendation: {
+                    action: latest.recommendation || 'Continue standard monitoring',
+                    estimated_cost: 0,
+                    yield_loss_risk: 0,
+                    confidence: 95
+                  }
+                };
               }
-            };
-            setFarms([singleFarm]);
-          } else {
-            const rawFarms = dashData.farms || [];
-            const mappedFarms = rawFarms.map(f => ({
-              id: String(f.id),
-              name: f.name,
-              cropType: f.cropType || f.crop_type || 'Wheat',
-              healthScore: f.healthScore || f.health_score || 72,
-              ndvi: f.ndvi || 0.61,
-              moisture: f.moisture || 'Low',
-              riskSeverity: f.riskSeverity || (f.zone_type === 'drought' ? 'high' : 'low'),
-              zoneType: f.zoneType || f.zone_type || 'drought',
-              location: f.location || undefined,
-              recommendation: f.recommendation || {
+            } catch (err) {
+              console.warn(`Failed to fetch history for farm ${farm.id}:`, err);
+            }
+            // Safe fallback if history is not available or fails
+            return {
+              id: String(farm.id),
+              name: farm.farm_name,
+              cropType: farm.cropType || farm.crop_type || 'Wheat',
+              healthScore: 80,
+              ndvi: 0.65,
+              moisture: '35%',
+              riskSeverity: 'low',
+              zoneType: 'healthy',
+              location: farm.location || `${Number(farm.latitude).toFixed(3)}°, ${Number(farm.longitude).toFixed(3)}°`,
+              recommendation: {
                 action: 'Continue standard monitoring',
                 estimated_cost: 0,
                 yield_loss_risk: 0,
                 confidence: 95
               }
-            }));
-            setFarms(mappedFarms);
-          }
-        }
+            };
+          })
+        );
+        setFarms(mappedFarms);
       }
 
       // Load agents status
@@ -347,7 +368,7 @@ export const MyFarmsScreen = ({ navigation }) => {
               ]}
               onPress={() => {
                 triggerHapticSelection();
-                navigation.navigate('FarmDetail', { farm: highestRiskFarm });
+                navigation.navigate('FarmDetail', { farmId: Number(highestRiskFarm.id) });
               }}
               activeOpacity={0.9}
             >
@@ -394,7 +415,7 @@ export const MyFarmsScreen = ({ navigation }) => {
                 style={[styles.highlightBtn, { backgroundColor: getHealthColor(highestRiskFarm.healthScore) }]}
                 onPress={() => {
                   triggerHapticSelection();
-                  navigation.navigate('FarmDetail', { farm: highestRiskFarm });
+                  navigation.navigate('FarmDetail', { farmId: Number(highestRiskFarm.id) });
                 }}
               >
                 <Text style={styles.highlightBtnText}>{t.viewDetails}</Text>
