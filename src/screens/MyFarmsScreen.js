@@ -14,6 +14,73 @@ import { useDemoState } from '../config/demoState';
 import { DemoBanner } from '../components/DemoBanner';
 import { translations } from '../constants/translations';
 
+// Simple in-memory weather cache (30 minutes caching)
+let weatherCache = {
+  lastFetched: 0, // Timestamp in ms
+  lat: null,
+  lon: null,
+  data: null,
+};
+
+const fetchWeather = async (latitude, longitude) => {
+  const now = Date.now();
+  const cacheAge = now - weatherCache.lastFetched;
+  const isSameLocation = weatherCache.lat === latitude && weatherCache.lon === longitude;
+
+  // Use cache if same location and age is less than 30 minutes (30 * 60 * 1000 = 1800000 ms)
+  if (weatherCache.data && isSameLocation && cacheAge < 1800000) {
+    return weatherCache.data;
+  }
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=precipitation_probability`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Open-Meteo API error');
+    const data = await res.json();
+
+    if (data && data.current) {
+      let rainProb = 0;
+      if (data.hourly && data.hourly.precipitation_probability && data.hourly.precipitation_probability.length > 0) {
+        // Find index matching current time or hour
+        const currentHourStr = data.current.time.substring(0, 13) + ":00";
+        const idx = data.hourly.time.findIndex(t => t.startsWith(currentHourStr));
+        if (idx !== -1) {
+          rainProb = data.hourly.precipitation_probability[idx];
+        } else {
+          rainProb = data.hourly.precipitation_probability[0];
+        }
+      }
+
+      const formatted = {
+        temp: `${Math.round(data.current.temperature_2m)}°C`,
+        humidity: `${data.current.relative_humidity_2m}%`,
+        rain: `${rainProb}%`,
+        wind: `${Math.round(data.current.wind_speed_10m)} km/h`,
+      };
+
+      // Update cache
+      weatherCache = {
+        lastFetched: now,
+        lat: latitude,
+        lon: longitude,
+        data: formatted,
+      };
+
+      return formatted;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch from Open-Meteo:', err);
+  }
+
+  // Fallback if API fails and no cache exists
+  return {
+    temp: '31°C',
+    humidity: '56%',
+    rain: '10%',
+    wind: '18 km/h',
+  };
+};
+
 const triggerHapticSelection = async () => {
   try {
     await Haptics.selectionAsync();
@@ -64,11 +131,18 @@ export const MyFarmsScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
+  const [weatherData, setWeatherData] = useState({
+    temp: '31°C',
+    humidity: '56%',
+    rain: '10%',
+    wind: '18 km/h',
+  });
+
   const weatherItems = [
-    { icon: 'sun', value: '31°C', label: t.weatherTemp },
-    { icon: 'droplet', value: '56%', label: t.weatherHumidity },
-    { icon: 'cloud-rain', value: '10%', label: t.weatherRain },
-    { icon: 'wind', value: '18 km/h', label: t.weatherWind },
+    { icon: 'sun', value: weatherData.temp, label: t.weatherTemp },
+    { icon: 'droplet', value: weatherData.humidity, label: t.weatherHumidity },
+    { icon: 'cloud-rain', value: weatherData.rain, label: t.weatherRain },
+    { icon: 'wind', value: weatherData.wind, label: t.weatherWind },
   ];
 
   const loadDashboardData = async (isRef = false) => {
@@ -85,6 +159,23 @@ export const MyFarmsScreen = ({ navigation }) => {
         fetchAgentStatus(),
         fetchAlerts(),
       ]);
+
+      // Determine coordinates for weather query
+      let weatherLat = 22.3072;
+      let weatherLon = 73.1812;
+      if (isDemoMode) {
+        weatherLat = 19.8762;
+        weatherLon = 75.3433;
+      } else if (farmsList && farmsList.length > 0) {
+        weatherLat = Number(farmsList[0].latitude);
+        weatherLon = Number(farmsList[0].longitude);
+      }
+
+      // Fetch live weather data from Open-Meteo
+      const liveWeather = await fetchWeather(weatherLat, weatherLon);
+      if (liveWeather) {
+        setWeatherData(liveWeather);
+      }
 
       // Calculate critical alerts count
       let critCount = 0;
@@ -323,22 +414,15 @@ export const MyFarmsScreen = ({ navigation }) => {
         }
       >
         {/* Weather Row */}
-        {isDemoMode ? (
-          <View style={styles.weatherRow}>
-            {weatherItems.map((item) => (
-              <View key={item.label} style={styles.weatherCard}>
-                <Feather name={item.icon} size={18} color={materialTheme.colors.primary} />
-                <Text style={styles.weatherValue}>{item.value}</Text>
-                <Text style={styles.weatherLabel}>{item.label}</Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.weatherUnavailableCard}>
-            <Feather name="cloud-off" size={20} color={materialTheme.colors.textSecondary} style={{ marginRight: 8 }} />
-            <Text style={styles.weatherUnavailableText}>Weather data unavailable.</Text>
-          </View>
-        )}
+        <View style={styles.weatherRow}>
+          {weatherItems.map((item) => (
+            <View key={item.label} style={styles.weatherCard}>
+              <Feather name={item.icon} size={18} color={materialTheme.colors.primary} />
+              <Text style={styles.weatherValue}>{item.value}</Text>
+              <Text style={styles.weatherLabel}>{item.label}</Text>
+            </View>
+          ))}
+        </View>
 
         {error && (
           <View style={styles.errorContainer}>
