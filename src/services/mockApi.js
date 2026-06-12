@@ -153,15 +153,7 @@ export const fetchAlerts = async () => {
   }
 
   // Default mode
-  return [
-    {
-      id: 1,
-      message: 'Critical drought stress detected.',
-      timestamp: new Date().toISOString(),
-      status: 'sent',
-    },
-    ...defaultAlerts
-  ];
+  return [];
 };
 
 export const fetchAgentStatus = async () => {
@@ -278,7 +270,12 @@ export const login = async (credentialPayload) => {
 
 export const fetchFarms = async () => {
   await delay(600);
-  return mockFarms.map(f => ({
+  const ds = demoState.get();
+  let list = mockFarms;
+  if (!ds.isDemoMode) {
+    list = mockFarms.filter(f => f.id !== 1 && f.id !== 2 && f.id !== 3);
+  }
+  return list.map(f => ({
     id: f.id,
     farm_name: f.name,
     latitude: f.latitude,

@@ -81,6 +81,8 @@ export const AddFieldScreen = ({ navigation, route }) => {
   const [soilType, setSoilType] = useState('');
   const [location, setLocation] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [savedFarmId, setSavedFarmId] = useState(null);
   const savedFarmIdRef = useRef(null);
@@ -88,6 +90,10 @@ export const AddFieldScreen = ({ navigation, route }) => {
   // Animated values for custom modal
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+
+  // Error modal animations
+  const errorFadeAnim = useRef(new Animated.Value(0)).current;
+  const errorScaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
     if (isEditMode) {
@@ -109,6 +115,12 @@ export const AddFieldScreen = ({ navigation, route }) => {
     }
   }, [route.params?.selectedLocation]);
 
+  const triggerHapticWarning = async () => {
+    try {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    } catch (e) {}
+  };
+
   useEffect(() => {
     if (showSuccess) {
       triggerHapticSuccess();
@@ -127,29 +139,50 @@ export const AddFieldScreen = ({ navigation, route }) => {
     }
   }, [showSuccess]);
 
+  useEffect(() => {
+    if (showError) {
+      triggerHapticWarning();
+      Animated.parallel([
+        Animated.timing(errorFadeAnim, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: true,
+        }),
+        Animated.timing(errorScaleAnim, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      errorFadeAnim.setValue(0);
+      errorScaleAnim.setValue(0.9);
+    }
+  }, [showError]);
+
   const handleSave = async () => {
-    if (!fieldName.trim()) {
-      Alert.alert(t.validationError, t.enterFarmName);
-      return;
-    }
-    if (!cropType) {
-      Alert.alert(t.validationError, t.enterCropType);
-      return;
-    }
-    if (!soilType) {
-      Alert.alert(t.validationError, t.enterSoilType);
-      return;
-    }
-    if (!location || !location.latitude || !location.longitude) {
-      Alert.alert(t.validationError, t.enterCoordinates);
+    if (!fieldName.trim() || !cropType || !soilType || !location || !location.latitude || !location.longitude) {
+      let missing = [];
+      if (!fieldName.trim()) missing.push(language === 'hi' ? 'खेत का नाम' : 'Farm Name');
+      if (!cropType) missing.push(language === 'hi' ? 'फसल का प्रकार' : 'Crop Type');
+      if (!soilType) missing.push(language === 'hi' ? 'मिट्टी का प्रकार' : 'Soil Type');
+      if (!location || !location.latitude || !location.longitude) missing.push(language === 'hi' ? 'खेत का स्थान' : 'Farm Location');
+      
+      const missingFieldsText = missing.join(', ');
+      const msg = language === 'hi'
+        ? `कृपया सभी आवश्यक फ़ील्ड भरें: ${missingFieldsText}`
+        : `Please fill in all required fields: ${missingFieldsText}`;
+      
+      setErrorMsg(msg);
+      setShowError(true);
       return;
     }
 
     const payload = {
       farm_name: fieldName.trim(),
       crop_type: cropType,
-      latitude: (location && Number.isFinite(location.latitude)) ? parseFloat(location.latitude.toFixed(4)) : 0.0,
-      longitude: (location && Number.isFinite(location.longitude)) ? parseFloat(location.longitude.toFixed(4)) : 0.0
+      latitude: (location && Number.isFinite(location.latitude)) ? parseFloat(location.latitude.toFixed(6)) : 0.0,
+      longitude: (location && Number.isFinite(location.longitude)) ? parseFloat(location.longitude.toFixed(6)) : 0.0
     };
 
 
@@ -258,26 +291,44 @@ export const AddFieldScreen = ({ navigation, route }) => {
         />
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>{t.locationCoordinates}</Text>
+          <Text style={styles.fieldLabel}>{t.locationCoordinates || 'Farm Location'}</Text>
           <TouchableOpacity 
-            style={styles.fieldSelect} 
+            style={styles.locationButton} 
             onPress={() => {
               triggerHapticSelection();
-              navigation.navigate('LocationPicker');
+              navigation.navigate('LocationPicker', {
+                initialLocation: location ? { latitude: location.latitude, longitude: location.longitude } : null
+              });
             }}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
-            <View style={styles.fieldSelectLeft}>
-              <Feather name="map-pin" size={16} color={materialTheme.colors.textSecondary} style={{ marginRight: 6 }} />
-              <Text style={[styles.fieldSelectText, location && { color: materialTheme.colors.onSurface }]}>
-                {(location && Number.isFinite(location.latitude) && Number.isFinite(location.longitude)) 
-                  ? `Lat: ${location.latitude.toFixed(4)}, Lon: ${location.longitude.toFixed(4)}` 
-                  : t.chooseLocation}
-              </Text>
-            </View>
-            <Feather name="chevron-right" size={18} color={materialTheme.colors.textSecondary} />
+            <Feather name="map" size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.locationButtonText}>
+              {location ? 'Change Farm Location' : 'Choose Farm Location'}
+            </Text>
           </TouchableOpacity>
         </View>
+
+        {location && Number.isFinite(location.latitude) && Number.isFinite(location.longitude) && (
+          <View style={styles.readOnlyContainer}>
+            <View style={styles.readOnlyRow}>
+              <View style={styles.readOnlyCard}>
+                <Text style={styles.cardLabel}>Latitude</Text>
+                <Text style={styles.cardValue}>{location.latitude.toFixed(6)}</Text>
+              </View>
+              <View style={styles.readOnlyCard}>
+                <Text style={styles.cardLabel}>Longitude</Text>
+                <Text style={styles.cardValue}>{location.longitude.toFixed(6)}</Text>
+              </View>
+            </View>
+            <View style={styles.readOnlyCardFull}>
+              <Text style={styles.cardLabel}>Location</Text>
+              <Text style={styles.cardValue}>
+                {location.locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`}
+              </Text>
+            </View>
+          </View>
+        )}
 
         <TouchableOpacity 
           style={[styles.saveBtn, loading && { opacity: 0.7 }]} 
@@ -326,6 +377,38 @@ export const AddFieldScreen = ({ navigation, route }) => {
                 activeOpacity={0.8}
               >
                 <Text style={styles.modalSecondaryBtnText}>{t.done}</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      )}
+
+      {showError && (
+        <View style={styles.modalOverlay}>
+          <Animated.View style={[
+            styles.modalContent,
+            {
+              opacity: errorFadeAnim,
+              transform: [{ scale: errorScaleAnim }]
+            }
+          ]}>
+            <View style={[styles.successIconContainer, { backgroundColor: materialTheme.colors.error }]}>
+              <Feather name="alert-triangle" size={32} color="#FFFFFF" />
+            </View>
+            <Text style={styles.modalTitle}>
+              {t.validationError}
+            </Text>
+            <Text style={styles.modalBody}>
+              {errorMsg}
+            </Text>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={[styles.modalPrimaryBtn, { backgroundColor: materialTheme.colors.error }]} 
+                onPress={() => setShowError(false)}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.modalPrimaryBtnText}>{t.ok || 'OK'}</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -526,5 +609,56 @@ const styles = StyleSheet.create({
     color: materialTheme.colors.primary,
     fontSize: 15,
     fontWeight: '700',
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: materialTheme.colors.primary,
+    borderRadius: materialTheme.borderRadius.input,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: materialTheme.colors.primaryDark,
+  },
+  locationButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  readOnlyContainer: {
+    marginBottom: materialTheme.spacing.lg,
+    gap: 8,
+  },
+  readOnlyRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  readOnlyCard: {
+    flex: 1,
+    backgroundColor: '#F9F9F6',
+    borderWidth: 1,
+    borderColor: '#E5E5E0',
+    borderRadius: 12,
+    padding: 12,
+  },
+  readOnlyCardFull: {
+    backgroundColor: '#F9F9F6',
+    borderWidth: 1,
+    borderColor: '#E5E5E0',
+    borderRadius: 12,
+    padding: 12,
+  },
+  cardLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: materialTheme.colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  cardValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: materialTheme.colors.onSurface,
   },
 });

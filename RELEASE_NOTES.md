@@ -6,10 +6,12 @@
 |:---|:---|
 | **Version** | v1.0.0 |
 | **Branch** | `yesh/mobile` |
-| **Latest Commit** | `ebd839a` |
+| **Latest Commit** | `233c7e4` |
 | **Build Date** | 2026-06-12 |
 | **Platform** | Android (Expo Go / EAS Preview APK) |
 | **Backend** | `https://cropsentinel-on03.onrender.com` |
+| **EAS Build ID** | `9b252639-2622-4b66-8eb8-8960d4cca536` |
+| **APK / Install URL** | https://expo.dev/accounts/yeshbind/projects/faraway/builds/9b252639-2622-4b66-8eb8-8960d4cca536 |
 
 ---
 

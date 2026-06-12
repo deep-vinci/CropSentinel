@@ -285,9 +285,11 @@ export const MyFarmsScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.menuBtn} onPress={() => navigateToTab('Settings')}>
             <Feather name="menu" size={22} color={materialTheme.colors.onSurface} />
           </TouchableOpacity>
-          <View style={styles.demoChip}>
-            <Text style={styles.demoChipText}>{t.demoMode}: {isDemoMode ? 'ON' : 'OFF'}</Text>
-          </View>
+          {isDemoMode && (
+            <View style={styles.demoChip}>
+              <Text style={styles.demoChipText}>{t.demoMode}: {isDemoMode ? 'ON' : 'OFF'}</Text>
+            </View>
+          )}
           <TouchableOpacity style={styles.bellBtn} onPress={() => navigateToTab('AlertsFeed')}>
             <Feather name="bell" size={20} color={materialTheme.colors.onSurface} />
           </TouchableOpacity>
