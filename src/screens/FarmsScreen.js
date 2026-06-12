@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 
 import { materialTheme } from '../theme';
 import { crops } from '../assets';
-import { fetchDashboard, fetchFarms, deleteFarm, getFarmHistory } from '../services';
+import { fetchFarms, deleteFarm, getFarmHistory } from '../services';
 import { LoadingState } from '../components/LoadingState';
 import { useDemoState } from '../config/demoState';
 import { DemoBanner } from '../components/DemoBanner';
@@ -201,28 +201,7 @@ export const FarmsScreen = ({ navigation }) => {
           }));
           setFarms(mappedFarms);
         } else {
-          // If fetchFarms doesn't return list, try dashboard data fallback
-          const dashData = await fetchDashboard();
-          if (dashData && dashData.farm) {
-            const singleFarm = {
-              id: String(dashData.farm.id || 1),
-              name: dashData.farm.name || 'Marathwada Sugarcane Farm',
-              cropType: dashData.farm.crop_type || 'sugarcane',
-              healthScore: dashData.farm_health_score ?? 72,
-              ndvi: dashData.ndvi ?? 0.21,
-              moisture: `${dashData.soil_moisture ?? 18}%`,
-              riskSeverity: (dashData.weather_risk ?? 0.65) > 0.6 ? 'high' : (dashData.weather_risk ?? 0.65) > 0.3 ? 'medium' : 'low',
-              zoneType: (dashData.weather_risk ?? 0.65) > 0.6 ? 'drought' : 'healthy',
-              location: dashData.farm.location || 'Maharashtra, India',
-              latitude: dashData.farm.latitude || 19.8762,
-              longitude: dashData.farm.longitude || 75.3433,
-              area: dashData.farm.area || '5.0',
-              soilType: dashData.farm.soil_type || 'Clay',
-            };
-            setFarms([singleFarm]);
-          } else {
-            throw new Error('No farms data received');
-          }
+          setFarms([]);
         }
       }
     } catch (err) {

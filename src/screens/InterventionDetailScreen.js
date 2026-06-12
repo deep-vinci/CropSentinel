@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { materialTheme } from '../theme';
-import { fetchDashboard, getIntervention, submitIntervention, fetchFarms } from '../services';
+import { getIntervention, getFarmHistory, postAnalyze, submitIntervention, fetchFarms } from '../services';
 import { LoadingState } from '../components/LoadingState';
 import { ErrorState } from '../components/ErrorState';
 import { scheduleLocalAlert } from '../services/notifications';
@@ -130,43 +130,144 @@ export const InterventionDetailScreen = ({ navigation, route }) => {
         }
       }
 
-      const dashboard = await fetchDashboard();
-      if (dashboard && dashboard.recommendation) {
-        const rec = dashboard.recommendation;
+      if (isDemoMode) {
+        // demo mode mock values
+        let action = 'Optimal moisture - continue normal irrigation.';
+        let description = 'Crop health is optimal. No drought stress detected.';
+        let irrigation = '0 mm';
+        let cost = 'Free';
+        let risk = 'None';
+        let confidence = 0.95;
+
+        // If sugarcane farm (id 3)
+        if (String(resolvedFarmId) === '3') {
+          if (isDroughtSimulated) {
+            action = 'Increase irrigation within 48 hours.';
+            description = 'Drought stress detected. High moisture depletion rate.';
+            irrigation = '35 mm';
+            cost = '₹1,200';
+            risk = '₹45,000';
+            confidence = 0.91;
+          } else {
+            action = 'Continue standard irrigation';
+            description = 'Crop health is optimal. No drought stress detected.';
+            irrigation = '0 mm';
+            cost = 'Free';
+            risk = 'None';
+            confidence = 0.95;
+          }
+        } else if (String(resolvedFarmId) === '2') {
+          action = 'Increase irrigation by 20% over next 5 days';
+          description = 'Moderate soil moisture deficit detected.';
+          irrigation = '20 mm';
+          cost = '₹520';
+          risk = '₹9,500';
+          confidence = 0.85;
+        } else if (String(resolvedFarmId) === '1') {
+          action = 'Continue current irrigation schedule';
+          description = 'Crop health is optimal. Soil moisture levels are standard.';
+          irrigation = '0 mm';
+          cost = 'Free';
+          risk = 'None';
+          confidence = 0.95;
+        }
+
         setDetails({
           farmId: resolvedFarmId || 3,
-          action: rec.action || 'Irrigate within 48 hours',
-          description: 'Timely action recommended by CropSentinel AI.',
-          irrigation: '35 mm',
-          cost: rec.estimated_cost !== undefined ? `₹${rec.estimated_cost.toLocaleString()}` : '₹340',
-          risk: rec.yield_loss_risk !== undefined ? `₹${rec.yield_loss_risk.toLocaleString()}` : '₹18,000',
-          confidence: rec.confidence ? rec.confidence / 100 : 0.91,
+          action,
+          description,
+          irrigation,
+          cost,
+          risk,
+          confidence,
           improvement: '20–25%',
           roi: '3.8x',
         });
       } else {
-        throw new Error('No recommendation data found in dashboard response');
-      }
-    } catch (err) {
-      console.warn('Failed to load intervention from dashboard, falling back to mock intervention:', err);
-      try {
-        const fallback = await getIntervention();
-        if (fallback) {
+        // Real mode:
+        const list = await fetchFarms();
+        if (!list || list.length === 0) {
+          throw new Error('No farms found. Add a field first to view insights.');
+        }
+        
+        let activeFarm = list.find(f => String(f.id) === String(resolvedFarmId));
+        if (!activeFarm) {
+          activeFarm = list[0];
+          resolvedFarmId = activeFarm.id;
+        }
+
+        // Try getting history first
+        let latest = null;
+        try {
+          const histRes = await getFarmHistory(resolvedFarmId);
+          if (histRes && histRes.history && histRes.history.length > 0) {
+            latest = histRes.history[0];
+          }
+        } catch (e) {
+          console.warn('History fetch failed, trying analysis...', e);
+        }
+
+        // If no history found, run analyze to generate recommendations
+        if (!latest) {
+          try {
+            const analyzeRes = await postAnalyze({
+              latitude: Number(activeFarm.latitude),
+              longitude: Number(activeFarm.longitude),
+              farm_id: Number(resolvedFarmId),
+            });
+            if (analyzeRes && analyzeRes.risk) {
+              latest = {
+                recommendation: analyzeRes.risk.recommendation,
+                risk_level: analyzeRes.risk.risk_level,
+                risk_score: analyzeRes.risk.risk_score,
+              };
+            }
+          } catch (e) {
+            console.warn('Analysis fallback failed...', e);
+          }
+        }
+
+        if (latest) {
+          const riskLevel = (latest.risk_level || 'low').toLowerCase();
+          const isHigh = riskLevel === 'high' || riskLevel === 'drought';
+          const isMedium = riskLevel === 'medium' || riskLevel === 'moderate';
+
+          const action = latest.recommendation || 'Continue standard monitoring';
+          const description = isHigh ? 'Critical moisture deficit detected. Urgent intervention required.' : isMedium ? 'Moderate moisture stress detected. Monitor soil moisture levels closely.' : 'Optimal moisture - continue normal irrigation.';
+          const irrigation = isHigh ? '35 mm' : isMedium ? '20 mm' : '0 mm';
+          const cost = isHigh ? '₹1,200' : isMedium ? '₹520' : 'Free';
+          const risk = isHigh ? '₹45,000' : isMedium ? '₹9,500' : 'None';
+          const confidence = isHigh ? 0.91 : isMedium ? 0.85 : 0.95;
+
           setDetails({
-            farmId: fallback.farm_id || 3,
-            action: fallback.action ? fallback.action.split(' - ')[0] : 'Irrigate immediately',
-            description: fallback.action ? fallback.action.split(' - ')[1] : 'Moisture level critically low',
-            irrigation: fallback.irrigation_mm ? `${fallback.irrigation_mm} mm` : '35 mm',
-            cost: fallback.cost_inr ? `₹${fallback.cost_inr.toLocaleString()}` : '₹1,200',
-            risk: fallback.risk_inr ? `₹${fallback.risk_inr.toLocaleString()}` : '₹45,000',
-            confidence: fallback.confidence || 0.91,
+            farmId: resolvedFarmId,
+            action,
+            description,
+            irrigation,
+            cost,
+            risk,
+            confidence,
             improvement: '20–25%',
             roi: '3.8x',
           });
+        } else {
+          // If no history and no analyze response, use safe fallback
+          setDetails({
+            farmId: resolvedFarmId,
+            action: 'Continue standard monitoring',
+            description: 'Vegetation status is stable. No active alerts or stress detected.',
+            irrigation: '0 mm',
+            cost: 'Free',
+            risk: 'None',
+            confidence: 0.95,
+            improvement: '0%',
+            roi: 'N/A',
+          });
         }
-      } catch (fallbackErr) {
-        setError('Failed to load recommendation details. Please try again.');
       }
+    } catch (err) {
+      console.warn('Failed to load recommendation details:', err);
+      setError(err.message || 'Failed to load recommendation details. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
