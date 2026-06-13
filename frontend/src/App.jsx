@@ -35,8 +35,11 @@ function AppNavigation() {
     if (hasToken) {
       if (!p || p === 'welcome' || p === 'login') return { phase: 'app', screen: 'home' };
       return { phase: p, screen: s || 'home' };
+    } else {
+      // Route Protection: Redirect unauthenticated app access to login
+      if (p === 'app') return { phase: 'login', screen: 'home' };
+      return { phase: p || 'welcome', screen: s || 'home' };
     }
-    return { phase: p || 'welcome', screen: s || 'home' };
   };
 
   const [phase, setPhase]   = useState(() => getInitialState().phase);
@@ -60,6 +63,13 @@ function AppNavigation() {
   React.useEffect(() => {
     localStorage.setItem('cs_phase', phase);
     localStorage.setItem('cs_screen', screen);
+    
+    // Continuous Route Protection
+    const hasToken = localStorage.getItem('cs_token');
+    if (phase === 'app' && !hasToken) {
+      setPhase('login');
+      window.history.replaceState({ phase: 'login', screen: 'home' }, '');
+    }
   }, [phase, screen]);
 
   const handleSetPhase = (newPhase) => {
