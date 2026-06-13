@@ -75,7 +75,7 @@ export const AppProvider = ({ children }) => {
     async function loadData() {
       try {
         const farmsList = await fetchFarms();
-        if (farmsList && farmsList.length > 0) {
+        if (Array.isArray(farmsList) && farmsList.length > 0) {
           const primaryFarm = farmsList[0];
           
           // Instantly unblock the UI with the basic farm list
@@ -135,7 +135,7 @@ export const AppProvider = ({ children }) => {
           }
 
         } else {
-          setState(prev => ({ ...prev, isLoading: false, error: 'No farms found.' }));
+          setState(prev => ({ ...prev, farms: [], isLoading: false, error: null }));
         }
       } catch (error) {
         console.error("Failed to load farms", error);

@@ -149,7 +149,7 @@ export async function fetchFarms() {
       };
     });
   }
-  return farms;
+  return [];
 }
 
 export async function deleteFarmApi(farmId) {
