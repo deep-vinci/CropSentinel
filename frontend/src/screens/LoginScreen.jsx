@@ -117,24 +117,34 @@ export default function LoginScreen({ onLogin }) {
           background: 'rgba(107, 155, 88, 0.1)',
           border: '1px solid rgba(107, 155, 88, 0.3)',
           borderRadius: 12, padding: 16, marginBottom: 8,
-          display: 'flex', flexDirection: 'column', gap: 8
+          display: 'flex', flexDirection: 'column', gap: 12
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--cs-accent)' }}>Hackathon Demo Account</span>
-            <button 
-              onClick={() => { setEmail("aayufarm@gmail.com"); setPassword("aayu@123"); setIdentifierError(false); }}
-              style={{
-                background: 'var(--cs-accent)', color: '#fff', border: 'none',
-                padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer'
-              }}
-            >
-              Auto-fill
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--cs-accent)' }}>Hackathon Demonstration</span>
+            <span style={{ fontSize: 12, color: 'var(--cs-text-sec)', lineHeight: 1.4 }}>
+              Instantly access the dashboard with a pre-configured demo farm profile. No sign-up required.
+            </span>
           </div>
-          <div style={{ fontSize: 13, color: 'var(--cs-text)', fontFamily: 'monospace', lineHeight: 1.5 }}>
-            <strong>Email:</strong> aayufarm@gmail.com<br/>
-            <strong>Password:</strong> aayu@123
-          </div>
+          <button 
+            onClick={() => {
+              const DEMO_EMAIL = "aayufarm@gmail.com";
+              localStorage.setItem("cs_profile_cache", JSON.stringify({ 
+                name: "Aayu Farm", 
+                email: DEMO_EMAIL, 
+                role: "Farmer" 
+              }));
+              setState(prev => ({ ...prev, user: { email: DEMO_EMAIL }, token: "demo-token" }));
+              toast.success("Demo Mode activated");
+              onLogin();
+            }}
+            style={{
+              background: 'var(--cs-accent)', color: '#fff', border: 'none',
+              padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+              display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8
+            }}
+          >
+            Continue in Demo Mode
+          </button>
         </div>
 
         {/* Phone / Email */}
