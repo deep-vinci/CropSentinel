@@ -221,7 +221,9 @@ export const MyFarmsScreen = ({ navigation }) => {
             zoneType: 'healthy',
             location: 'Punjab, India',
             recommendation: {
-              action: 'Continue current irrigation schedule',
+              action: 'Inspect crops and apply targeted treatment.',
+              reason: 'Pest indicators exceed safe thresholds.',
+              confidence: 88,
             }
           },
           {
@@ -235,7 +237,9 @@ export const MyFarmsScreen = ({ navigation }) => {
             zoneType: 'moderate',
             location: 'Tamil Nadu, India',
             recommendation: {
-              action: 'Increase irrigation by 20% over next 5 days',
+              action: 'Improve drainage and delay irrigation.',
+              reason: 'Excessive moisture may damage root systems.',
+              confidence: 90,
             }
           },
           {
@@ -249,7 +253,9 @@ export const MyFarmsScreen = ({ navigation }) => {
             zoneType: sugarcaneZone,
             location: 'Maharashtra, India',
             recommendation: {
-              action: isDroughtSimulated ? 'Increase irrigation within 48 hours.' : 'Continue standard irrigation',
+              action: 'Irrigate within 24 hours.',
+              reason: 'Low moisture and declining NDVI detected.',
+              confidence: 95,
             }
           }
         ];
@@ -366,6 +372,11 @@ export const MyFarmsScreen = ({ navigation }) => {
 
   // Use highest risk farm recommendation as the latest AI recommendation
   const latestRec = highestRiskFarm ? highestRiskFarm.recommendation : null;
+
+  // Show latest recommendation card if in demo mode, or if in production mode and a real backend recommendation exists
+  const showRecommendationCard = isDemoMode 
+    ? !!latestRec 
+    : (!!latestRec && latestRec.action && latestRec.action !== 'Continue standard monitoring' && latestRec.action !== 'No action required.');
 
   const navigateToTab = (route) => {
     triggerHapticSelection();
@@ -535,7 +546,7 @@ export const MyFarmsScreen = ({ navigation }) => {
         )}
 
         {/* Latest AI Recommendation Card */}
-        {latestRec && (
+        {showRecommendationCard && (
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>{t.latestRecommendation}</Text>
             <View style={styles.recommendationCard}>
@@ -543,16 +554,24 @@ export const MyFarmsScreen = ({ navigation }) => {
                 <View style={styles.recIconContainer}>
                   <Feather name="cpu" size={20} color={materialTheme.colors.primary} />
                 </View>
-                <Text style={styles.recommendationTitleText} numberOfLines={2}>
-                  {latestRec.action}
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.recommendationTitleText} numberOfLines={2}>
+                    {latestRec.action}
+                  </Text>
+                  {isDemoMode && latestRec.reason && (
+                    <Text style={{ fontSize: 13, color: materialTheme.colors.textSecondary, marginTop: 4, fontWeight: '500' }}>
+                      {latestRec.reason} (Confidence: {latestRec.confidence}%)
+                    </Text>
+                  )}
+                </View>
               </View>
-
-
 
               <TouchableOpacity
                 style={styles.recBtn}
-                onPress={() => navigateToTab('InterventionDetail')}
+                onPress={() => {
+                  triggerHapticSelection();
+                  navigation.navigate('InterventionDetail', { farmId: highestRiskFarm?.id });
+                }}
               >
                 <Text style={styles.recBtnText}>{t.viewInsights}</Text>
                 <Feather name="bar-chart-2" size={16} color="#FFFFFF" style={{ marginLeft: 6 }} />

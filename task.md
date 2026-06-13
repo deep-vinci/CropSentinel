@@ -40,3 +40,12 @@
   - [x] Expo SDK 56 compatibility
 - [x] D5: Demo Mode, Dedicated Farms Screen & Dashboard Redesign
 - [ ] D6: Backend Integration & Release
+
+## Demo Mode Recommendations Restore
+- [x] Implement scenario-specific recommendations in `mockApi.js` for each farm scenario (Drought, Pest, Flood)
+- [x] Restore scenario-specific recommendations in `MyFarmsScreen.js` demo farms list
+- [x] Update visibility condition of "Latest AI Recommendation" card to show in Demo Mode but hide in Production Mode unless backend recommendations exist
+- [x] Render the scenario-specific reason and confidence details on the dashboard recommendation card in Demo Mode
+- [x] Implement premium scenario recommendation details UI, confidence progress bar, and "Apply" success flow for Demo Mode on `InterventionDetailScreen.js`
+- [x] Preserve the empty state layout in Production Mode on `InterventionDetailScreen.js`
+- [x] Verify build health using `npx expo-doctor` and `npx expo export`
