@@ -96,17 +96,19 @@ export const LoginScreen = ({ navigation }) => {
     try {
       const credential = inputValue;
       const value = credential.trim();
-      let response;
+      let payload = {};
 
       if (PHONE_REGEX.test(value)) {
-        response = await login({
+        payload = {
           phone_number: value,
-        });
+        };
       } else if (EMAIL_REGEX.test(value)) {
-        response = await login({
-          email: value,
-        });
+        payload = {
+          phone_number: value,
+        };
       }
+
+      const response = await login(payload);
 
       if (response && response.access_token) {
         setAuthToken(response.access_token);
