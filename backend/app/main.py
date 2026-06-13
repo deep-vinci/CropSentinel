@@ -22,8 +22,8 @@ app = FastAPI(
 # Enable CORS for cross-origin requests from Vercel to Render
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, you can replace "*" with your Vercel URL
-    allow_credentials=True,
+    allow_origins=["https://crop-sentinel-aayumays-projects.vercel.app"],  # In production, you can replace "*" with your Vercel URL
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
