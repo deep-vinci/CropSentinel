@@ -90,6 +90,7 @@ export default function AgentMissionControl({ onNavigate }) {
   const [consoleLogs, setConsoleLogs] = useState([]);
   const [systemMode, setSystemMode] = useState('nominal');
   const pipelineStartRef = useRef(0);
+  const consecutiveErrorsRef = useRef(0);
 
   useEffect(() => {
     if (logsContainerRef.current) {
@@ -147,12 +148,18 @@ export default function AgentMissionControl({ onNavigate }) {
         }
         
         setAgentTelemetry(newTelemetry);
+        consecutiveErrorsRef.current = 0; // Reset on success
 
       } catch (error) {
         console.error("Failed to fetch agent status", error);
+        consecutiveErrorsRef.current += 1;
       } finally {
         if (isMounted) {
-          timeoutId = setTimeout(pollAgentStatus, 3000);
+          // If errors occur, slow down polling to prevent console spam (up to 30s)
+          const delay = consecutiveErrorsRef.current > 0 
+            ? Math.min(30000, 3000 * Math.pow(2, consecutiveErrorsRef.current - 1))
+            : 3000;
+          timeoutId = setTimeout(pollAgentStatus, delay);
         }
       }
     };
