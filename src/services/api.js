@@ -69,10 +69,10 @@ const makeRequest = async (path, options = {}) => {
 
 // ─── AUTHENTICATION ──────────────────────────────────────────────────────────
 // credentialPayload: { phone_number: string } | { email: string }
-export const login = async (credentialPayload) => {
+export const login = async (payload) => {
   return makeRequest('/auth/login', {
     method: 'POST',
-    body: JSON.stringify(credentialPayload),
+    body: JSON.stringify(payload),
   });
 };
 

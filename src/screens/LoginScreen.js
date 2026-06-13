@@ -94,17 +94,24 @@ export const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // Build the correct payload based on input type
-      const credential =
-        result.type === 'phone'
-          ? { phone_number: inputValue.trim() }
-          : { email: inputValue.trim() };
+      const credential = inputValue;
+      const value = credential.trim();
+      let response;
 
-      const response = await login(credential);
+      if (PHONE_REGEX.test(value)) {
+        response = await login({
+          phone_number: value,
+        });
+      } else if (EMAIL_REGEX.test(value)) {
+        response = await login({
+          email: value,
+        });
+      }
+
       if (response && response.access_token) {
         setAuthToken(response.access_token);
         if (response.user) {
-          setProfileEmail(response.user.phone_number || inputValue.trim());
+          setProfileEmail(response.user.phone_number || value);
           setProfileName(`Farmer ${response.user.id}`);
         }
       }
